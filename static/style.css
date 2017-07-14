@@ -1,0 +1,98 @@
+.draganddrop {
+  font-family: monospace, Lucida;
+}
+
+.draganddrop-draggables {
+  padding-top: 0.3em;
+}
+
+.draggable {
+  padding: 0.5em;
+  background-color: rgb(223, 240, 216);
+  border: solid 1px black;
+  margin: 1px; /* some empty space between the draggable boxes */
+  float: left;
+  cursor: move;
+}
+
+.draggable.disabled {
+  background-color: rgb(204, 204, 204);
+  color: rgb(89, 89, 89);
+  cursor: not-allowed;
+}
+
+.small {
+  font-size: small;
+}
+
+.droppable {
+  /* droppable spaces between words should not be collapsed (zero width) at the end of lines */
+  white-space: pre-wrap;
+  border: 0.2em dotted #aaaaaa;
+}
+
+.droppable * {
+  /* hack for dragenter and dragleave events: child elements do not trigger them with
+  pointer events disabled and thus the dragleave event is not triggered for the parent
+  when the cursor moves from the parent to its children */
+  pointer-events: none;
+}
+
+.droppable:hover {
+  background-color: #eee;
+  cursor: pointer;
+}
+
+.droppable.over {
+  background-color: #eee;
+}
+
+.draganddrop-content {
+  clear: both; /* clear draggable floats */
+  line-height: 1.5;
+}
+
+.draganddrop-content.fixed-info {
+  margin-bottom: 180px; /* must match the height of the fixed position element .draganddrop-info */
+}
+
+.draganddrop-info {
+  background-color: rgb(242, 242, 242);
+}
+
+.draganddrop-info.fixed {
+  position: fixed;
+  bottom: 0px;
+  width: 98%;
+  max-height: 180px;
+  overflow-y: scroll;
+}
+
+.draganddrop-feedback, .draganddrop-complete {
+  padding: 1em;
+}
+
+.correct {
+  background: #cfc;
+  border: solid 2px green;
+}
+
+.wrong {
+  background: #fcc;
+}
+
+.neutral {
+  background: #ccf;
+}
+
+.hide {
+  display: none;
+}
+
+code {
+  padding: 2px 4px;
+  font-size: 90%;
+  color: black;
+  background-color: #f9f2f4;
+  border-radius: 4px;
+}
