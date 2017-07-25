@@ -158,7 +158,10 @@
     handleDragEnter: function(e) {
       // e.target is the current hover target (droppable)
       e.preventDefault(); // really needed?
-      $(e.target).addClass('over');
+      if (!$(e.target).hasClass('correct')) {
+        // the droppable has not been correctly answered yet so add a class for styling while hovering over it
+        $(e.target).addClass('over');
+      }
     },
     
     handleDragLeave: function(e) {
