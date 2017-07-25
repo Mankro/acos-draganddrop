@@ -264,9 +264,9 @@
       }
       
       this.updatePoints();
+      this.updateCorrectDragsLeftMessage();
       
       //TODO check complete, send grading
-      //TODO correct drags left message
       //TODO click on old answers (droppables with some draggable in) to show feedback for those again
     },
     
@@ -334,6 +334,17 @@
       this.correctPointsElem.text(this.correctAnswers);
       this.wrongPointsElem.text(this.incorrectAnswers);
       this.pointsDiv.removeClass('hide').show();
+    },
+    
+    updateCorrectDragsLeftMessage: function() {
+      if (this.correctAnswers >= 0.5 * this.maxCorrectAnswers) {
+        var left = this.maxCorrectAnswers - this.correctAnswers; // how many correct answers left
+        var msgAttr = (left === 1) ? this.settings.drags_left_singular_msg_attr : this.settings.drags_left_plural_msg_attr;
+        var msg = this.dragsLeftMsgDiv.attr(msgAttr);
+        msg = msg.replace('{counter}', left.toString());
+        this.dragsLeftMsgDiv.html(msg);
+        this.dragsLeftMsgDiv.removeClass('hide').show();
+      }
     },
   
   });
