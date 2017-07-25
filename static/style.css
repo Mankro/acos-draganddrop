@@ -38,13 +38,27 @@
   pointer-events: none;
 }
 
-.droppable:hover {
+/* hover over a droppable that has not been answered yet */
+/* drag event hovering over a droppable */
+.droppable:hover, .droppable.over {
   background-color: #eee;
-  cursor: pointer;
 }
 
-.droppable.over {
-  background-color: #eee;
+/* hover over a droppable that has been answered: they can be clicked to show their feedback again */
+.droppable.correct:hover {
+  color: blue;
+  cursor: pointer;
+  background-color: #cfc;
+}
+.droppable.wrong:hover {
+  color: blue;
+  cursor: pointer;
+  background-color: #fcc;
+}
+.droppable.neutral:hover {
+  color: blue;
+  cursor: pointer;
+  background-color: #ccf;
 }
 
 .draganddrop-content {
@@ -73,16 +87,16 @@
 }
 
 .correct {
-  background: #cfc;
+  background-color: #cfc;
   border: solid 2px green;
 }
 
 .wrong {
-  background: #fcc;
+  background-color: #fcc;
 }
 
 .neutral {
-  background: #ccf;
+  background-color: #ccf;
 }
 
 .hide {

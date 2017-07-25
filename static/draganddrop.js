@@ -29,8 +29,10 @@
     this.settings = $.extend({}, defaults, options);
     
     this.completed = false;
+    // answers made to each droppable (no duplicates even if the same answer is repeated) (key: droppable unique id)
     this.questionAnswered = {};
-    this.droppablesByLabel = {};
+    this.droppablesByLabel = {}; // array of droppable unique ids for each droppable label (key: droppable label)
+    this.latestAnswers = {}; // latest answer for each droppable (key: droppable unique id)
     this.feedbackDiv = this.element.find(this.settings.feedback_selector);
     this.pointsDiv = this.element.find(this.settings.points_selector);
     this.completeDiv = this.element.find(this.settings.completed_selector);
@@ -86,7 +88,10 @@
         }
         
         self.questionAnswered[uniqueId] = [];
+        // the array will contain the draggable labels corresponding to answers made by the user
+        // on this droppable (no duplicate values are added to the array)
         
+        self.latestAnswers[uniqueId] = null; // latest answer (draggable label) on this droppable
       })
       .on('dragover', function(e) {
         self.handleDragOver(e);
@@ -99,6 +104,10 @@
       })
       .on('drop', function(e) {
         self.handleDrop(e);
+      })
+      .on('click', function(e) {
+        // show feedback again for this droppable
+        self.handleDroppableClick(e);
       });
       
       this.draggablesContainer.find(this.settings.draggable_selector)
@@ -199,11 +208,33 @@
       this.dragData = null;
     },
     
+    // show feedback for a droppable again if it is clicked
+    handleDroppableClick: function(e) {
+      e.stopPropagation();
+      e.preventDefault();
+      
+      var dropId = $(e.target).data('id');
+      var answers = this.questionAnswered[dropId];
+      if (answers.length < 1) {
+        // not answered yet, do nothing
+        return false;
+      }
+      
+      var draggableLabel = this.latestAnswers[dropId];
+      var droppableLabel = $(e.target).data('label');
+      var feedback = this.getFeedback(draggableLabel, droppableLabel);
+      this.updateFeedback(feedback, this.isCorrectAnswer(draggableLabel, droppableLabel));
+      
+      return false;
+    },
+    
     checkAnswer: function(draggableLabel, droppableLabel, droppableElem) {
       // if the correct answer has been given for this droppable, ignore the drag event
       if (droppableElem.hasClass('correct')) {
         return;
       }
+      
+      this.latestAnswers[droppableElem.data('id')] = draggableLabel;
       
       var wasAnswered = true;
       if (this.questionAnswered[droppableElem.data('id')].indexOf(draggableLabel) === -1) {
@@ -212,6 +243,102 @@
       }
       
       var dragPayload = this.draggablesPayload[draggableLabel];
+      //var dropPayload = this.droppablesPayload[droppableLabel];
+      var isCorrect = this.isCorrectAnswer(draggableLabel, droppableLabel);
+      
+      var feedback = this.getFeedback(draggableLabel, droppableLabel);
+      this.updateFeedback(feedback, isCorrect);
+      droppableElem.removeClass('correct wrong');
+      if (isCorrect) {
+        droppableElem.addClass('correct');
+        if (!wasAnswered) {
+          this.correctAnswers++;
+        }
+        // if the same draggable should not be reused after finding the correct droppable for it (default: allow reuse)
+        if (dragPayload.reuse === false) {
+          this.disableDraggable(draggableLabel);
+        }
+      } else {
+        droppableElem.addClass('wrong');
+        if (!wasAnswered) {
+          this.incorrectAnswers++;
+        }
+      }
+      
+      // reveal text defined by the draggable in the droppable
+      this.revealAnswerInDroppable(draggableLabel, droppableElem);
+      
+      this.updatePoints();
+      this.updateCorrectDragsLeftMessage();
+      
+      //TODO check complete, send grading
+    },
+    
+    getFeedback: function(draggableLabel, droppableLabel) {
+      var feedback;
+      var dropPl = this.droppablesPayload[droppableLabel];
+      var dragPl = this.draggablesPayload[draggableLabel];
+      if (dropPl.feedback && dropPl.feedback[draggableLabel]) {
+        feedback = dropPl.feedback[draggableLabel];
+      } else if (dragPl.feedback && dragPl.feedback[droppableLabel]) {
+        feedback = dragPl.feedback[droppableLabel];
+      } else if (dropPl.feedback && dropPl.feedback.DEFAULT) {
+        feedback = dropPl.feedback.DEFAULT;
+      } else if (dragPl.feedback && dragPl.feedback.DEFAULT) {
+        feedback = dragPl.feedback.DEFAULT;
+      } else {
+        feedback = '[ERROR: no feedback set]';
+      }
+      
+      // check combined feedback and add it if necessary
+      feedback += this.getComboFeedback(draggableLabel, droppableLabel);
+      
+      return feedback;
+    },
+    
+    getComboFeedback: function(draggableLabel, droppableLabel) {
+      var feedback = '';
+      if (!window.draganddrop.combinedfeedback) {
+        // undefined
+        return feedback;
+      }
+      var len = window.draganddrop.combinedfeedback.length;
+      for (var i = 0; i < len; ++i) {
+        var comboObj = window.draganddrop.combinedfeedback[i];
+        if (comboObj.combo && comboObj.feedback) {
+          var comboFulfilled = true;
+          var currentAnswerInCombo = false;
+          for (var j = 0; j < comboObj.combo.length; ++j) {
+            var pair = comboObj.combo[j]; // draggable label, droppable label
+            if (pair[0] === draggableLabel && pair[1] === droppableLabel) {
+              // check that the current answer is part of the combo
+              currentAnswerInCombo = true;
+            }
+            // droppables may reuse the same label, hence all of those droppables must be
+            // checked to see if their answer is part of the combo
+            var foundAnswer = false;
+            for (var k = 0; k < this.droppablesByLabel[pair[1]].length; ++k) {
+              var dropId = this.droppablesByLabel[pair[1]][k];
+              if (this.latestAnswers[dropId] === pair[0]) {
+                // the latest answer to the droppable should be the draggable given in the pair in order to fulfil the combo
+                foundAnswer = true;
+                break;
+              }
+            }
+            if (!foundAnswer) {
+              comboFulfilled = false;
+              break; // this combo is not fulfilled since this pair is missing
+            }
+          }
+          if (comboObj.combo.length > 0 && comboFulfilled && currentAnswerInCombo) {
+            feedback += '<br>' + comboObj.feedback;
+          }
+        }
+      }
+      return feedback;
+    },
+    
+    isCorrectAnswer: function(draggableLabel, droppableLabel) {
       var dropPayload = this.droppablesPayload[droppableLabel];
       var isCorrect = false;
       if (Array.isArray(dropPayload.correct)) {
@@ -224,107 +351,7 @@
           isCorrect = true;
         }
       }
-      
-      var feedback = this.getFeedback(draggableLabel, droppableLabel);
-      this.feedbackDiv.html(feedback).removeClass('correct wrong');
-      droppableElem.removeClass('correct wrong');
-      if (isCorrect) {
-        this.feedbackDiv.addClass('correct');
-        droppableElem.addClass('correct');
-        if (!wasAnswered) {
-          this.correctAnswers++;
-        }
-        // if the same draggable should not be reused after finding the correct droppable for it (default: allow reuse)
-        if (dragPayload.reuse === false) {
-          this.disableDraggable(draggableLabel);
-        }
-      } else {
-        this.feedbackDiv.addClass('wrong');
-        droppableElem.addClass('wrong');
-        if (!wasAnswered) {
-          this.incorrectAnswers++;
-        }
-      }
-      
-      // reveal text defined by the draggable in the droppable
-      if (!wasAnswered) {
-        if (dragPayload.reveal) {
-          if (dragPayload.reveal.replace) {
-            droppableElem.html('<span>' + dragPayload.reveal.replace + '</span>');
-          }
-          if (dragPayload.reveal.append) {
-            droppableElem.find('span.drop-reveal').remove(); // remove previous reveals
-            droppableElem.append('<span class="small drop-reveal"> [' + dragPayload.reveal.append + ']</span>');
-          }
-          if (dragPayload.reveal.prepend) {
-            droppableElem.find('span.drop-reveal').remove(); // remove previous reveals
-            droppableElem.prepend('<span class="small drop-reveal">[' + dragPayload.reveal.prepend + '] </span>');
-          }
-        } else {
-          // by default, replace the droppable content with the draggable content
-          droppableElem.html('<span>' + dragPayload.content + '</span>');
-        }
-      }
-      
-      this.updatePoints();
-      this.updateCorrectDragsLeftMessage();
-      
-      //TODO check complete, send grading
-      //TODO click on old answers (droppables with some draggable in) to show feedback for those again
-    },
-    
-    getFeedback: function(draggableLabel, droppableLabel) {
-      var feedback;
-      if (this.droppablesPayload[droppableLabel].feedback && this.droppablesPayload[droppableLabel].feedback[draggableLabel]) {
-        feedback = this.droppablesPayload[droppableLabel].feedback[draggableLabel];
-      } else if (this.draggablesPayload[draggableLabel].feedback && this.draggablesPayload[draggableLabel].feedback[droppableLabel]) {
-        feedback = this.draggablesPayload[draggableLabel].feedback[droppableLabel];
-      } else if (this.droppablesPayload[droppableLabel].feedback && this.droppablesPayload[droppableLabel].feedback.DEFAULT) {
-        feedback = this.droppablesPayload[droppableLabel].feedback.DEFAULT;
-      } else if (this.draggablesPayload[draggableLabel].feedback && this.draggablesPayload[draggableLabel].feedback.DEFAULT) {
-        feedback = this.draggablesPayload[draggableLabel].feedback.DEFAULT;
-      } else {
-        feedback = '[ERROR: no feedback set]';
-      }
-      
-      // check combined feedback and add it if necessary
-      if (window.draganddrop.combinedfeedback) {
-        var len = window.draganddrop.combinedfeedback.length;
-        for (var i = 0; i < len; ++i) {
-          var comboObj = window.draganddrop.combinedfeedback[i];
-          if (comboObj.combo && comboObj.feedback) {
-            var comboFulfilled = true;
-            var currentAnswerInCombo = false;
-            for (var j = 0; j < comboObj.combo.length; ++j) {
-              var pair = comboObj.combo[j]; // draggable label, droppable label
-              if (pair[0] === draggableLabel && pair[1] === droppableLabel) {
-                // check that the current answer is part of the combo
-                currentAnswerInCombo = true;
-              }
-              // droppables may reuse the same label, hence all of those droppables must be
-              // checked to see if their answer is part of the combo
-              var foundAnswer = false;
-              for (var k = 0; k < this.droppablesByLabel[pair[1]].length; ++k) {
-                var dropId = this.droppablesByLabel[pair[1]][k];
-                if (this.questionAnswered[dropId][this.questionAnswered[dropId].length - 1] === pair[0]) {
-                  // the latest answer to the droppable should be the draggable given in the pair in order to fulfil the combo
-                  foundAnswer = true;
-                  break;
-                }
-              }
-              if (!foundAnswer) {
-                comboFulfilled = false;
-                break; // this combo is not fulfilled since this pair is missing
-              }
-            }
-            if (comboObj.combo.length > 0 && comboFulfilled && currentAnswerInCombo) {
-              feedback += '<br>' + comboObj.feedback;
-            }
-          }
-        }
-      }
-      
-      return feedback;
+      return isCorrect;
     },
     
     // disable a draggable element so that it cannot be dragged anymore
@@ -347,6 +374,45 @@
         msg = msg.replace('{counter}', left.toString());
         this.dragsLeftMsgDiv.html(msg);
         this.dragsLeftMsgDiv.removeClass('hide').show();
+      }
+    },
+    
+    updateFeedback: function(feedback, isCorrect) {
+      this.feedbackDiv.html(feedback).removeClass('correct wrong');
+      if (isCorrect) {
+        this.feedbackDiv.addClass('correct');
+      } else {
+        this.feedbackDiv.addClass('wrong');
+      }
+    },
+    
+    revealAnswerInDroppable: function(draggableLabel, droppableElem) {
+      var dragPayload = this.draggablesPayload[draggableLabel];
+      // if the reveal value is not defined in the payload,
+      // the default action is to replace the droppable content with the draggable content
+      if (dragPayload.reveal === false) {
+        // if the reveal value is set to false in the payload,
+        // do not reveal anything and keep the droppable text intact
+        return;
+      }
+      
+      if (dragPayload.reveal) {
+        // nested <span> elements are used to hack with pointer events in the drag-and-drop API
+        // and they are also used to separate the prepend and append reveal values
+        // from the other droppable content
+        droppableElem.find('span.drop-reveal').remove(); // remove previous reveals (append and prepend)
+        if (dragPayload.reveal.replace) {
+          droppableElem.html('<span>' + dragPayload.reveal.replace + '</span>');
+        }
+        if (dragPayload.reveal.append) {
+          droppableElem.append('<span class="small drop-reveal"> [' + dragPayload.reveal.append + ']</span>');
+        }
+        if (dragPayload.reveal.prepend) {
+          droppableElem.prepend('<span class="small drop-reveal">[' + dragPayload.reveal.prepend + '] </span>');
+        }
+      } else {
+        // by default, replace the droppable content with the draggable content
+        droppableElem.html('<span>' + dragPayload.content + '</span>');
       }
     },
   
