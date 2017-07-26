@@ -21,6 +21,11 @@
   cursor: not-allowed;
 }
 
+/* draggables are disabled when the exercise is completed */
+.draggable.finished {
+  cursor: not-allowed;
+}
+
 .small {
   font-size: small;
 }

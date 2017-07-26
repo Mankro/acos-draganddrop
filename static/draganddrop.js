@@ -206,6 +206,12 @@
       $(e.target).css('opacity', ''); // remove the inline style set in dragstart
       this.element.find(this.settings.droppable_selector).removeClass('over');
       this.dragData = null;
+      
+      if (this.completed) {
+        // if the exercise has been completed, detach the drag event handlers
+        // do it here so that the drag event for the last answer may finish normally
+        this.detachDragEventHandlers();
+      }
     },
     
     // show feedback for a droppable again if it is clicked
@@ -228,14 +234,20 @@
       return false;
     },
     
+    // check the answer and do everything else that is necessary and not related to the drag-and-drop API:
+    // update UI, check completion and send grading when finished
     checkAnswer: function(draggableLabel, droppableLabel, droppableElem) {
+      // if the exercise has been completed or
       // if the correct answer has been given for this droppable, ignore the drag event
-      if (droppableElem.hasClass('correct')) {
+      if (this.completed || droppableElem.hasClass('correct')) {
         return;
       }
       
       this.latestAnswers[droppableElem.data('id')] = draggableLabel;
       
+      // Has the draggable already been dragged on the droppable previously?
+      // It is possible to repeat the same wrong answer before the correct answer is found,
+      // but repeating the same wrong answer does not affect grading.
       var wasAnswered = true;
       if (this.questionAnswered[droppableElem.data('id')].indexOf(draggableLabel) === -1) {
         this.questionAnswered[droppableElem.data('id')].push(draggableLabel);
@@ -271,7 +283,25 @@
       this.updatePoints();
       this.updateCorrectDragsLeftMessage();
       
-      //TODO check complete, send grading
+      // save the answer for logging (only once for each draggable-droppable combination)
+      // the full log is uploaded to the ACOS server at the end
+      if (!wasAnswered) {
+        // with the label a log analyzer can check if the answer was correct or not
+        // (exercise JSON payload has the same labels)
+        // droppable IDs are unique, labels may be reused
+        // no user ID is used here
+        // if this content type wants to log multiple things, we should add some type key to the payload (type: "drag")
+        var logPayload = {
+          qid: droppableElem.data('id'), // question (droppable)
+          qlabel: droppableLabel,
+          alabel: draggableLabel, // answer (draggable)
+          time: new Date().toISOString(), // current time
+        };
+        
+        this.answerLog.push(logPayload);
+      }
+      
+      this.checkCompletion();
     },
     
     getFeedback: function(draggableLabel, droppableLabel) {
@@ -354,6 +384,54 @@
       return isCorrect;
     },
     
+    checkCompletion: function() {
+      if (this.correctAnswers >= this.maxCorrectAnswers) {
+        this.completed = true;
+        this.dragsLeftMsgDiv.hide();
+        this.completeDiv.text(this.completeDiv.attr(this.settings.complete_msg_attr));
+        this.completeDiv.removeClass('hide').show();
+        this.grade();
+        this.sendLog();
+      }
+    },
+    
+    grade: function() {
+      var self = this;
+      
+      if (window.location.pathname.substring(0, 6) !== '/html/') {
+        // hide this uploading message when acos html protocol is used since it does not store any grading
+        this.completeDiv.text(this.completeDiv.attr(this.settings.complete_uploading_msg_attr));
+      }
+      
+      var scorePercentage = Math.round(this.maxCorrectAnswers / (this.correctAnswers + this.incorrectAnswers) * 100);
+      
+      // show final points
+      this.addFinalPointsString(this.pointsDiv, scorePercentage);
+      // feedback for the grading event that is sent to the server
+      var feedback = 'You scored ' + scorePercentage + ' %'; //this.buildFeedback(); //TODO
+      if (window.ACOS) {
+        // set max points to 100 since the points are given as a percentage 0-100%
+        ACOS.sendEvent('grade', { max_points: 100, points: scorePercentage, feedback: feedback }, function(content, error) {
+          if (error) {
+            // error in uploading the grading result to the server, show a message to the user
+            self.completeDiv.text(self.completeDiv.attr(self.settings.complete_error_msg_attr) + error.error);
+            return;
+          }
+          // the grading result has been sent to the server
+          if (window.location.pathname.substring(0, 6) !== '/html/') {
+            // hide this uploading message when acos html protocol is used since it does not store any grading
+            self.completeDiv.text(self.completeDiv.attr(self.settings.complete_uploaded_msg_attr));
+          }
+        });
+      }
+    },
+    
+    sendLog: function() {
+      if (window.ACOS) {
+        window.ACOS.sendEvent('log', this.answerLog);
+      }
+    },
+    
     // disable a draggable element so that it cannot be dragged anymore
     disableDraggable: function(draggableLabel) {
       var dragElem = this.draggablesContainer.find(this.settings.draggable_selector + "[data-label='" + draggableLabel + "']");
@@ -414,6 +492,23 @@
         // by default, replace the droppable content with the draggable content
         droppableElem.html('<span>' + dragPayload.content + '</span>');
       }
+    },
+    
+    detachDragEventHandlers: function() {
+      this.element.find(this.settings.droppable_selector)
+        .off('dragover dragenter dragleave drag');
+      this.draggablesContainer.find(this.settings.draggable_selector)
+        .off('dragstart dragend')
+        .attr('draggable', 'false')
+        .addClass('finished');
+    },
+    
+    addFinalPointsString: function(pointsElem, scorePercentage) {
+      // string to format, fill in score
+      var finalPointsStr = pointsElem.attr(this.settings.final_points_msg_attr);
+      finalPointsStr = finalPointsStr.replace('{score}', scorePercentage.toString());
+      // prepend the final score HTML to the points element
+      pointsElem.prepend(finalPointsStr);
     },
   
   });
