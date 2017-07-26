@@ -340,7 +340,9 @@
           var currentAnswerInCombo = false;
           for (var j = 0; j < comboObj.combo.length; ++j) {
             var pair = comboObj.combo[j]; // draggable label, droppable label
-            if (pair[0] === draggableLabel && pair[1] === droppableLabel) {
+            // no type checking in the if since integer labels may be integers or strings
+            // after parsing JSON/HTML and accessing via the jQuery data API
+            if (pair[0] == draggableLabel && pair[1] == droppableLabel) {
               // check that the current answer is part of the combo
               currentAnswerInCombo = true;
             }
