@@ -117,12 +117,15 @@
         .on('dragend', function(e) {
           self.handleDragEnd(e);
         });
-        
       
-      /*this.setInfoPosition(); //TODO
+      // use fixed positioning for the info and draggables containers
+      // if they cannot be seen on the screen otherwise
+      this.setInfoPosition();
+      this.setDraggablesPosition();
       $(window).on('resize', function() {
         self.setInfoPosition();
-      });*/
+        self.setDraggablesPosition();
+      });
     },
     
     // Event handlers for drag-and-drop (native HTML5 API)
@@ -511,6 +514,49 @@
       finalPointsStr = finalPointsStr.replace('{score}', scorePercentage.toString());
       // prepend the final score HTML to the points element
       pointsElem.prepend(finalPointsStr);
+    },
+    
+    setInfoPosition: function() {
+      if ($(window).height() * 0.8 > this.contentDiv.height()) {
+        // exercise content fits easily in the window
+        // use normal positioning for the info box
+        this.infoDiv.removeClass('fixed');
+        this.contentDiv.removeClass('fixed-info');
+        this.infoDiv.css('maxHeight', ''); // remove css property
+        this.contentDiv.css('marginBottom', '');
+      } else {
+        // exercise content takes most space in the window or does not fit in:
+        // use fixed positioning for the info box to keep it visible on the screen
+        this.infoDiv.addClass('fixed');
+        this.contentDiv.addClass('fixed-info');
+        var h = $(window).height() * 0.25;
+        this.infoDiv.css('maxHeight', h);
+        this.contentDiv.css('marginBottom', h);
+      }
+    },
+    
+    setDraggablesPosition: function() {
+      // make the draggables container fixed if it cannot be seen: the window is too small
+      // to fit everything on the screen at once
+      
+      if ($(window).height() * 0.8 > this.contentDiv.height()) {
+        // exercise content fits easily in the window
+        // use normal positioning for the draggables container
+        this.draggablesContainer.removeClass('fixed');
+        this.contentDiv.removeClass('fixed-draggables');
+        this.draggablesContainer.css('maxHeight', $(window).height() * 0.25);
+        // max height prevents the draggables container from becoming massive if there are many draggables
+        this.contentDiv.css('marginTop', ''); // remove css property
+      } else {
+        // exercise content takes most space in the window or does not fit in:
+        // use fixed positioning for the draggables container to keep it visible on the screen
+        this.draggablesContainer.addClass('fixed');
+        this.contentDiv.addClass('fixed-draggables');
+        this.draggablesContainer.css('maxHeight', ''); // remove maxHeight to measure real height
+        var h = Math.min(this.draggablesContainer.height(), $(window).height() * 0.25);
+        this.draggablesContainer.css('maxHeight', h);
+        this.contentDiv.css('marginTop', h);
+      }
     },
   
   });

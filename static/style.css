@@ -4,6 +4,17 @@
 
 .draganddrop-draggables {
   padding-top: 0.3em;
+  /* max-height set in JS */
+  overflow-y: scroll;
+  background-color: rgba(242, 242, 242, 0.5);
+}
+
+.draganddrop-draggables.fixed {
+  position: fixed;
+  top: 0px;
+  width: 98%;
+  max-height: 180px;
+  overflow-y: scroll;
 }
 
 .draggable {
@@ -73,6 +84,10 @@
 
 .draganddrop-content.fixed-info {
   margin-bottom: 180px; /* must match the height of the fixed position element .draganddrop-info */
+}
+
+.draganddrop-content.fixed-draggables {
+  margin-top: 180px; /* must match the height of the fixed position element .draganddrop-draggables */
 }
 
 .draganddrop-info {
