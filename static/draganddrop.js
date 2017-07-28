@@ -65,7 +65,7 @@
             .addClass(self.settings.draggable_class)
             .attr('data-label', id)
             .attr('draggable', 'true')
-            .text(text)
+            .html(text)
             .appendTo(self.draggablesContainer);
         }
       }
