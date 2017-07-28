@@ -82,7 +82,7 @@
         
         var questionLabel = $(this).data('label'); // labels are set by the teacher, they may repeat the same values
         if (Array.isArray(self.droppablesByLabel[questionLabel])) {
-          self.droppablesByLabel[questionLabel].push(uniqueid);
+          self.droppablesByLabel[questionLabel].push(uniqueId);
         } else {
           self.droppablesByLabel[questionLabel] = [uniqueId];
         }
