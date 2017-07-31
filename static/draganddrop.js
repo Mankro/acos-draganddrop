@@ -413,7 +413,7 @@
       // show final points
       this.addFinalPointsString(this.pointsDiv, scorePercentage);
       // feedback for the grading event that is sent to the server
-      var feedback = 'You scored ' + scorePercentage + ' %'; //this.buildFeedback(); //TODO
+      var feedback = this.buildFinalFeedback();
       if (window.ACOS) {
         // set max points to 100 since the points are given as a percentage 0-100%
         ACOS.sendEvent('grade', { max_points: 100, points: scorePercentage, feedback: feedback }, function(content, error) {
@@ -558,8 +558,123 @@
         this.contentDiv.css('marginTop', h);
       }
     },
+    
+    buildFinalFeedback: function() {
+      var self = this;
+      // clone the exercise element and modify the clone a bit for the final feedback
+      var feedbackElem = this.element.clone();
+      feedbackElem.find(this.settings.completed_selector).remove();
+      feedbackElem.find(this.settings.feedback_selector).empty().removeClass('correct wrong neutral');
+      feedbackElem.find(this.settings.drags_left_msg_selector).remove();
+      
+      // convert <img> src URLs to absolute URLs (with hostname) if they are currently relative (without hostname)
+      this.convertUrlAttrs(feedbackElem, 'img', 'src');
+      
+      var copy_payload = $.extend(true, {}, window.draganddrop); // deep copy of the payload
+      var payload = copy_payload.draggables; // temporary variable
+      for (var key in payload) {
+        if (payload.hasOwnProperty(key)) {
+          delete payload[key].reuse; // delete unneeded property
+          // convert relative URLs in feedback strings to absolute
+          if (!payload[key].feedback) {
+            continue;
+          }
+          for (var k in payload[key].feedback) {
+            if (payload[key].feedback.hasOwnProperty(k)) {
+              payload[key].feedback[k] = this.convertUrlsInFeedbackString(payload[key].feedback[k]);
+            }
+          }
+        }
+      }
+      
+      payload = copy_payload.droppables;
+      for (var key in payload) {
+        if (payload.hasOwnProperty(key)) {
+          // convert relative URLs in feedback strings to absolute
+          if (!payload[key].feedback) {
+            continue;
+          }
+          for (var k in payload[key].feedback) {
+            if (payload[key].feedback.hasOwnProperty(k)) {
+              payload[key].feedback[k] = this.convertUrlsInFeedbackString(payload[key].feedback[k]);
+            }
+          }
+        }
+      }
+      
+      payload = copy_payload.combinedfeedback;
+      for (var i = 0; i < payload.length; ++i) {
+        var obj = payload[i];
+        if (obj.feedback) {
+          obj.feedback = this.convertUrlsInFeedbackString(obj.feedback);
+        }
+      }
+      
+      // add all answers made in this submission to the payload
+      // it lists the used draggable labels for each droppable (unique id)
+      copy_payload.answers = this.questionAnswered;
+      
+      // store the copied payload in the feedback element
+      $('<script></script>').text('window.draganddrop = ' + JSON.stringify(copy_payload) + ';').prependTo(feedbackElem);
+      
+      // script that enables click events in the feedback page (click to show feedback)
+      $('<script></script>', {
+        src: getWindowUrlDomain() + '/static/draganddrop/feedback.js', // URL to the ACOS server
+      }).appendTo(feedbackElem);
+      
+      // feedback CSS is injected to the feedback HTML in the ACOS server (draganddrop handleEvent)
+      
+      // ensure that points are visible
+      feedbackElem.find(self.settings.points_selector).removeClass('hide');
+      
+      // remove the draggables list from the page
+      feedbackElem.find(this.settings.draggables_selector).remove();
+      
+      // remove inline styles used for the fixed positioning of the info box
+      feedbackElem.find(this.settings.info_selector).removeClass('fixed').css('maxHeight', '');
+      feedbackElem.find(this.settings.content_selector).removeClass('fixed-info fixed-draggables')
+        .css('marginBottom', '').css('marginTop', '');
+      
+      // wrap hack is used to get the outer HTML (HTML string including the top element)
+      return feedbackElem.wrap('<div/>').parent().html();
+    },
+    
+    /** Convert relative URLs to absolute (include hostname in the URL) in element attribute values.
+     * 
+     * contentElem: jQuery object of the surrounding element that is searched for URLs to convert
+     * selector: selector used within the contentElem to find the elements that have URL attributes, e.g., "img"
+     * attr: name of the attribute that contains the URL, e.g., "src"
+     */
+    convertUrlAttrs: function(contentElem, selector, attr) {
+      contentElem.find(selector).attr(attr, function(idx, oldVal) {
+        if (oldVal) {
+          return convertUrlToAbsolute(oldVal);
+        }
+      });
+    },
+    
+    convertUrlsInFeedbackString: function(feedback) {
+      // feedback is an HTML string
+      // wrap in a div to make a jQuery object
+      var wrapper = $('<div></div>').html(feedback);
+      this.convertUrlAttrs(wrapper, 'img', 'src');
+      return wrapper.html();
+    },
   
   });
+  
+  function getWindowUrlDomain() {
+    return window.location.protocol + '//' + window.location.host;
+  }
+  
+  function convertUrlToAbsolute(url) {
+    var absoluteRegExp = /^(#|\/\/|\w+:)/;
+    if (!absoluteRegExp.test(url)) { // if not absolute URL
+      // assume that url is a root-relative URL (starts with "/" like "/static/...")
+      return getWindowUrlDomain() + url;
+    }
+    return url;
+  }
   
   // attach a method to jQuery objects that initializes drag-and-drop exercise
   // in the elements matched by the jQuery object

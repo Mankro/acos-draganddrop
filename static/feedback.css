@@ -1,0 +1,80 @@
+/* stylesheet for the final feedback of exercise submissions. For example, A+ shows the final feedback on a separate page. */
+.draganddrop {
+  font-family: monospace, Lucida;
+}
+
+.draganddrop .small {
+  font-size: small;
+}
+
+.draganddrop .droppable {
+  /* droppable spaces between words should not be collapsed (zero width) at the end of lines */
+  white-space: pre-wrap;
+  border: 0.2em dotted #aaaaaa;
+}
+
+/* hover over a droppable that has not been answered yet */
+.draganddrop .droppable:hover {
+  background-color: #eee;
+}
+
+/* hover over a droppable that has been answered: they can be clicked to show their feedback again */
+.draganddrop .droppable.correct:hover {
+  color: blue;
+  cursor: pointer;
+  background-color: #cfc;
+}
+.draganddrop .droppable.wrong:hover {
+  color: blue;
+  cursor: pointer;
+  background-color: #fcc;
+}
+.draganddrop .droppable.neutral:hover {
+  color: blue;
+  cursor: pointer;
+  background-color: #ccf;
+}
+
+.draganddrop-content {
+  line-height: 1.5;
+}
+
+.draganddrop-content.fixed-info {
+  margin-bottom: 200px; /* must match the height of the fixed position element .draganddrop-info */
+}
+
+.draganddrop-info {
+  background-color: rgb(242, 242, 242);
+}
+
+.draganddrop-info.fixed {
+  position: fixed;
+  bottom: 0px;
+  max-height: 200px;
+  overflow-y: scroll;
+}
+
+.draganddrop-feedback {
+  padding: 1em;
+}
+
+.draganddrop .correct {
+  background-color: #cfc;
+  border: solid 2px green;
+}
+
+.draganddrop .wrong {
+  background-color: #fcc;
+}
+
+.draganddrop .neutral {
+  background-color: #ccf;
+}
+
+.draganddrop code {
+  padding: 2px 4px;
+  font-size: 90%;
+  color: black;
+  background-color: #f9f2f4;
+  border-radius: 4px;
+}
