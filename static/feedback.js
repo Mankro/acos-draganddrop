@@ -40,9 +40,12 @@ function initDragAndDropFeedback(element, options, $, window, document, undefine
     init: function() {
       var self = this;
       
+      var idCounter = 0;
       this.element.find(this.settings.droppable_selector).each(function() {
+        var uniqueId = idCounter++;
+        $(this).data('id', uniqueId);
         var questionLabel = $(this).data('label'); // labels are set by the teacher, they may repeat the same values
-        var uniqueId = $(this).data('id');
+        
         if (Array.isArray(self.droppablesByLabel[questionLabel])) {
           self.droppablesByLabel[questionLabel].push(uniqueId);
         } else {
@@ -59,6 +62,15 @@ function initDragAndDropFeedback(element, options, $, window, document, undefine
         self.latestAnswers[uniqueId] = draggableLabel;
         
         var droppableElem = $(this);
+        // set the reveal effect of the latest answer inside the droppable element
+        self.revealAnswerInDroppable(draggableLabel, droppableElem);
+        // set correct or wrong style
+        if (self.isCorrectAnswer(draggableLabel, questionLabel)) {
+          droppableElem.addClass('correct');
+        } else {
+          droppableElem.addClass('wrong');
+        }
+        
         // create the select menu for showing the feedback of other answers for this droppable
         if (answers.length > 1) {
           var answerSelect = $('<select>');

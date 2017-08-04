@@ -34,15 +34,9 @@ Draganddrop =
   
   handleEvent: (event, payload, req, res, protocolPayload, responseObj, cb) ->
     if event == 'grade' and payload.feedback?
-      # add <style> element for styling the final feedback
-      fs.readFile path.join(__dirname, 'static', 'feedback.css'), 'utf8', (err, cssData) ->
-        if (!err)
-          styleTag = "<style>#{ cssData }</style>"
-          # insert the <style> element inside the feedback <div> at the beginning
-          styleStartIdx = payload.feedback.indexOf('>') + 1 # should be the index after the end of the first <div> start tag
-          payload.feedback = payload.feedback.slice(0, styleStartIdx) + styleTag + payload.feedback.slice(styleStartIdx)
-        
-        cb event, payload, req, res, protocolPayload, responseObj
+      pacutil.buildFinalFeedback(Draganddrop, Draganddrop.handlers.contentPackages[req.params.contentPackage],
+        __dirname, Draganddrop.config.serverAddress, njEnv, exerciseCache, payload, req,
+        () -> cb(event, payload, req, res, protocolPayload, responseObj))
       
       return # cb is called in the callback in this if branch
       

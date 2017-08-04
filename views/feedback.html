@@ -1,0 +1,21 @@
+<div class="draganddrop">
+    <style>{{ cssStyle|safe }}</style>
+    <script type="text/javascript">
+      window.draganddrop = {{ payload|safe }};
+    </script>
+    <script src="{{ serverUrl|safe }}/static/draganddrop/feedback.js"></script>
+
+    <div class="draganddrop-content">
+        {{ exercise|safe }}
+    </div>
+    
+    <div class="draganddrop-info">
+        <div class="draganddrop-feedback"></div>
+        <div class="draganddrop-points">
+          <b>You scored {{ score }}&nbsp;%.</b><br>
+          Correct: {{ correctAnswers }}<br>
+          Wrong: {{ incorrectAnswers }}<br>
+        </div>
+    </div>
+</div>
+
