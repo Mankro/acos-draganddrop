@@ -9,6 +9,20 @@ njEnv = nunjucks.configure(path.join(__dirname, 'views'))
 # cache parsed XML exercise definitions
 exerciseCache = {}
 
+
+# Modify the JSON payload for the final feedback
+finalFeedbackPayloadTransformer = (payload, serverAddress) ->
+  for own label, data of payload.draggables
+    delete data.reuse
+    pacutil.convertRelativeUrlsInHtmlStrings(data.feedback, serverAddress) if data.feedback?
+  for own label, data of payload.droppables
+    pacutil.convertRelativeUrlsInHtmlStrings(data.feedback, serverAddress) if data.feedback?
+  if payload.combinedfeedback?
+    for comboObj in payload.combinedfeedback
+      comboObj.feedback = pacutil.convertRelativeUrlsInHtml comboObj.feedback, serverAddress
+  null
+
+
 Draganddrop =
 
   # Registers the content type at server startup
@@ -36,6 +50,7 @@ Draganddrop =
     if event == 'grade' and payload.feedback?
       pacutil.buildFinalFeedback(Draganddrop, Draganddrop.handlers.contentPackages[req.params.contentPackage],
         __dirname, Draganddrop.config.serverAddress, njEnv, exerciseCache, payload, req,
+        finalFeedbackPayloadTransformer,
         () -> cb(event, payload, req, res, protocolPayload, responseObj))
       
       return # cb is called in the callback in this if branch
