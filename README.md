@@ -194,7 +194,7 @@ The `droppables` object in the JSON must define configuration for each droppable
 that is used in the exercise XML file. The following keys may be defined for each droppable:
 * `correct` (required): if only one draggable is the correct answer to this droppable,
   give the draggable label as a string here. Otherwise, if any one of multiple draggables
-  is accepted as the correct answer, give the draggable labels in an array (`"label1", "label2", ...]`)
+  is accepted as the correct answer, give the draggable labels in an array (`["label1", "label2", ...]`)
 * `feedback`: feedback HTML strings for each draggable-droppable pair. See `feedback` in
   the draggables section for a more detailed explanation.
 
@@ -227,7 +227,7 @@ Example JSON:
 ```
 
 The JSON file may define the key `combinedfeedback` in the top level if combined
-feedback should be used. The feature is completely optional. The value of the
+feedback should be used. Using this feature is completely optional. The value of the
 `combinedfeedback` key is an array that consists of objects. Each object defines
 one combination. The objects use the following keys:
 
