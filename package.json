@@ -3,7 +3,7 @@
   "version": "0.2.0",
   "dependencies": {
     "nunjucks": "~3.0.1",
-    "clickdragfillin-util": "git+ssh://git@version.aalto.fi:riekkim1/acos-clickdragfillin-util.git#94874b19fdcceda913b7381f0f08a2da08bcdec3"
+    "clickdragfillin-util": "git+ssh://git@version.aalto.fi:riekkim1/acos-clickdragfillin-util.git#8ecebf064ca488c3392368a68eeef8ed28fed0ce"
   },
   "description": "Drag-and-drop exercise content type for the ACOS server",
   "main": "index.coffee",
