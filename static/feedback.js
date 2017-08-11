@@ -206,17 +206,19 @@ function initDragAndDropFeedback(element, options, $, window, document, undefine
       }
       
       // check combined feedback and add it if necessary
-      feedback += this.getComboFeedback(draggableLabel, droppableLabel);
+      feedback += this.getComboFeedback(draggableLabel, droppableLabel, true);
       
       return feedback;
     },
     
-    getComboFeedback: function(draggableLabel, droppableLabel) {
-      var feedback = '';
+    getComboFeedback: function(draggableLabel, droppableLabel, inHtml) {
+      // inHtml: if true or undefined, return combined feedback as an HTML string.
+      //   If false, return an array of strings (based on the payload, so they may have HTML formatting).
       if (!window.draganddrop.combinedfeedback) {
-        // undefined
-        return feedback;
+        // no combined feedback in the exercise
+        return inHtml === false ? [] : '';
       }
+      var feedback = [];
       var len = window.draganddrop.combinedfeedback.length;
       for (var i = 0; i < len; ++i) {
         var comboObj = window.draganddrop.combinedfeedback[i];
@@ -248,11 +250,20 @@ function initDragAndDropFeedback(element, options, $, window, document, undefine
             }
           }
           if (comboObj.combo.length > 0 && comboFulfilled && currentAnswerInCombo) {
-            feedback += '<br>' + comboObj.feedback;
+            feedback.push(comboObj.feedback);
           }
         }
       }
-      return feedback;
+      if (inHtml === false) {
+        return feedback;
+      } else {
+        var html = '';
+        var len = feedback.length;
+        for (var i = 0; i < len; ++i) {
+          html += '<br>' + '<span class="draganddrop-combinedfeedback">' + feedback[i] + '</span>';
+        }
+        return html;
+      }
     },
     
     isCorrectAnswer: function(draggableLabel, droppableLabel) {

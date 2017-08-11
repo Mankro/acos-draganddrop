@@ -58,6 +58,10 @@
   padding: 1em;
 }
 
+.draganddrop-combinedfeedback {
+  color: rgb(51, 51, 255);
+}
+
 .draganddrop .correct {
   background-color: #cfc;
   border: solid 2px green;
