@@ -27,6 +27,28 @@ function initDragAndDropFeedback(element, options, $, window, document, undefine
     this.draggablesPayload = window.draganddrop.draggables;
     this.droppablesPayload = window.draganddrop.droppables;
     this.questionAnswered = window.draganddrop.answers; // answers to each droppable (key: droppable unique id)
+    
+    // sanity check for the payload
+    var allDefined = ([this.draggablesPayload, this.droppablesPayload, this.questionAnswered].every(function(x) {
+      return typeof x !== 'undefined' && x !== null;
+    }));
+    if (!allDefined) {
+      console.error("Feedback payload is missing!");
+      return;
+    }
+    if (typeof this.questionAnswered === 'object') {
+      // arrays have type "object" too
+      for (var t in this.questionAnswered) {
+        if (this.questionAnswered.hasOwnProperty(t) && !Array.isArray(this.questionAnswered[t])) {
+          console.error("Feedback payload is invalid!");
+          return;
+        }
+      }
+    } else {
+      console.error("Feedback payload is invalid!");
+      return;
+    }
+    
     this.latestAnswers = {}; // latest answer selected for each droppable (key: droppable unique id)
     this.droppablesByLabel = {}; // array of droppable unique ids for each droppable label (key: droppable label)
     this.feedbackDiv = this.element.find(this.settings.feedback_selector);
@@ -56,8 +78,10 @@ function initDragAndDropFeedback(element, options, $, window, document, undefine
         // the variable will then keep track of the latest selected answer)
         var answers = self.questionAnswered[uniqueId];
         var draggableLabel = undefined;
-        if (answers.length > 0) {
+        if (answers && answers.length > 0) {
           draggableLabel = answers[answers.length - 1];
+        } else {
+          return true; // no answers set, continue to the next element in iteration
         }
         self.latestAnswers[uniqueId] = draggableLabel;
         
