@@ -221,6 +221,11 @@ Example JSON:
     {
       "combo": [["draggablelabel3", "droppablelabel1"], ["draggablelabel1", "droppablelabel2"], ["draggablelabel2", "droppablelabel3"]],
       "feedback": "This combination of words is commonly used in technical writing within computer science."
+    },
+    {
+      "combo": [["draggablelabel1", 0], ["draggablelabel2", 1]],
+      "feedback": "Combo feedback set with droppable IDs: draggables 1 and 2 dragged into the first two droppables",
+      "useDroppableId": true
     }
   ]
 }
@@ -233,9 +238,27 @@ one combination. The objects use the following keys:
 
 * `combo`: an array of 2-element arrays. The nested arrays define draggable-droppable pairs,
   i.e., answers. At least two pairs should be defined so that there is a combination
-  of multiple answers, not just one.
+  of multiple answers, not just one. Droppables are defined by their labels by default,
+  however, if the option `useDroppableId` is set, they are defined by their unique IDs.
+  
+  Droppable labels may be reused in the exercise, i.e., there may be several droppables
+  with the same label and any of them could satisfy the requirement in the combo.
+  If the label of a droppable is reused and only one of the droppables should be affected
+  by a combo, use the droppable ID to define that one specific droppable.
+  Droppable IDs start from 0 and increment sequentially. For example,
+  the first droppable in the exercise has ID zero and the second has ID one
+  (as seen in the exercise XML file and in the rendered web page; the order is
+  not based on the JSON definition of the droppables).
+  When using IDs, you must count the number of droppables in the exercise yourself so
+  that you may write the correct IDs in the JSON file. The IDs must be updated if
+  you add new droppables since the subsequent droppable IDs increase then.
+  Note that the IDs are integers, not strings, so no quotation marks are used
+  around IDs in the JSOn file.
 * `feedback`: the feedback HTML string that is shown when the combination is triggered.
   The additional feedback does not replace the normal feedback.
+* `useDroppableId` (optional): if set to true, the `combo` array in this object uses
+  droppable IDs instead of droppable labels to define the droppables in each pair.
+  By default, labels are used.
 
 
 # Custom stylesheets
