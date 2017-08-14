@@ -254,6 +254,7 @@ one combination. The objects use the following keys:
   you add new droppables since the subsequent droppable IDs increase then.
   Note that the IDs are integers, not strings, so no quotation marks are used
   around IDs in the JSOn file.
+  
 * `feedback`: the feedback HTML string that is shown when the combination is triggered.
   The additional feedback does not replace the normal feedback.
 * `useDroppableId` (optional): if set to true, the `combo` array in this object uses
