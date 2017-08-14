@@ -157,7 +157,7 @@ function initDragAndDropFeedback(element, options, $, window, document, undefine
       // Update styles
       var isCorrect = this.isCorrectAnswer(draggableLabel, droppableLabel);
       
-      var feedback = this.getFeedback(draggableLabel, droppableLabel);
+      var feedback = this.getFeedback(draggableLabel, droppableLabel, droppableElem.data('id'));
       this.updateFeedback(feedback, isCorrect);
       droppableElem.removeClass('correct wrong');
       if (isCorrect) {
@@ -189,7 +189,7 @@ function initDragAndDropFeedback(element, options, $, window, document, undefine
       this.infoDiv.width(this.contentDiv.width());
     },
     
-    getFeedback: function(draggableLabel, droppableLabel) {
+    getFeedback: function(draggableLabel, droppableLabel, droppableId) {
       var feedback;
       var dropPl = this.droppablesPayload[droppableLabel];
       var dragPl = this.draggablesPayload[draggableLabel];
@@ -206,12 +206,12 @@ function initDragAndDropFeedback(element, options, $, window, document, undefine
       }
       
       // check combined feedback and add it if necessary
-      feedback += this.getComboFeedback(draggableLabel, droppableLabel, true);
+      feedback += this.getComboFeedback(draggableLabel, droppableLabel, droppableId, true);
       
       return feedback;
     },
     
-    getComboFeedback: function(draggableLabel, droppableLabel, inHtml) {
+    getComboFeedback: function(draggableLabel, droppableLabel, droppableId, inHtml) {
       // inHtml: if true or undefined, return combined feedback as an HTML string.
       //   If false, return an array of strings (based on the payload, so they may have HTML formatting).
       if (!window.draganddrop.combinedfeedback) {
@@ -220,40 +220,58 @@ function initDragAndDropFeedback(element, options, $, window, document, undefine
       }
       var feedback = [];
       var len = window.draganddrop.combinedfeedback.length;
+      // loop over all combined feedback and for each combination, check if the conditions are fulfilled
       for (var i = 0; i < len; ++i) {
         var comboObj = window.draganddrop.combinedfeedback[i];
         if (comboObj.combo && comboObj.feedback) {
-          var comboFulfilled = true;
+          var comboFulfilled = true; // are all conditions (pairs) satisfied?
           var currentAnswerInCombo = false;
+          // useDropId: if true, second part of the combo pair is a droppable unique id, not label
+          var useDropId = comboObj.useDroppableId === true;
+          // loop over the answers (draggable-droppable pairs) in the combo:
+          // each pair must be satisfied in order to fulfill the combo
           for (var j = 0; j < comboObj.combo.length; ++j) {
-            var pair = comboObj.combo[j]; // draggable label, droppable label
+            var pair = comboObj.combo[j]; // draggable label, droppable label/id
+            // Check if the current answer is part of the combo
+            // (one pair must match with the current answer): if not, the combo is not triggered.
             // no type checking in the if since integer labels may be integers or strings
             // after parsing JSON/HTML and accessing via the jQuery data API
-            if (pair[0] == draggableLabel && pair[1] == droppableLabel) {
-              // check that the current answer is part of the combo
+            if (!currentAnswerInCombo && pair[0] == draggableLabel &&
+                ((!useDropId && pair[1] == droppableLabel) || (useDropId && pair[1] == droppableId))) {
               currentAnswerInCombo = true;
             }
-            // droppables may reuse the same label, hence all of those droppables must be
-            // checked to see if their answer is part of the combo
-            var foundAnswer = false;
-            for (var k = 0; k < this.droppablesByLabel[pair[1]].length; ++k) {
-              var dropId = this.droppablesByLabel[pair[1]][k];
-              if (this.latestAnswers[dropId] === pair[0]) {
-                // the latest answer to the droppable should be the draggable given in the pair in order to fulfil the combo
-                foundAnswer = true;
-                break;
+            
+            // check if this pair is satisfied, i.e., the latest answer in the droppable is the draggable given in the pair
+            var pairSatisfied = false;
+            if (useDropId) {
+              if (this.latestAnswers[pair[1]] === pair[0]) {
+                pairSatisfied = true;
+              }
+            } else {
+              // droppables may reuse the same label, hence all of those droppables must be
+              // checked to see if their answer is part of the combo
+              for (var k = 0; k < this.droppablesByLabel[pair[1]].length; ++k) {
+                var dropId = this.droppablesByLabel[pair[1]][k];
+                if (this.latestAnswers[dropId] === pair[0]) {
+                  pairSatisfied = true;
+                  break;
+                }
               }
             }
-            if (!foundAnswer) {
+            if (!pairSatisfied) {
+              // this combo is not fulfilled since this pair is missing
               comboFulfilled = false;
-              break; // this combo is not fulfilled since this pair is missing
+              break;
             }
           }
+          
+          // are the conditions for this combined feedback fulfilled?
           if (comboObj.combo.length > 0 && comboFulfilled && currentAnswerInCombo) {
             feedback.push(comboObj.feedback);
           }
         }
       }
+      
       if (inHtml === false) {
         return feedback;
       } else {
@@ -265,7 +283,7 @@ function initDragAndDropFeedback(element, options, $, window, document, undefine
         return html;
       }
     },
-    
+
     isCorrectAnswer: function(draggableLabel, droppableLabel) {
       var dropPayload = this.droppablesPayload[droppableLabel];
       var isCorrect = false;
