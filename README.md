@@ -240,7 +240,6 @@ one combination. The objects use the following keys:
   i.e., answers. At least two pairs should be defined so that there is a combination
   of multiple answers, not just one. Droppables are defined by their labels by default,
   however, if the option `useDroppableId` is set, they are defined by their unique IDs.
-  
   Droppable labels may be reused in the exercise, i.e., there may be several droppables
   with the same label and any of them could satisfy the requirement in the combo.
   If the label of a droppable is reused and only one of the droppables should be affected
@@ -254,7 +253,6 @@ one combination. The objects use the following keys:
   you add new droppables since the subsequent droppable IDs increase then.
   Note that the IDs are integers, not strings, so no quotation marks are used
   around IDs in the JSOn file.
-  
 * `feedback`: the feedback HTML string that is shown when the combination is triggered.
   The additional feedback does not replace the normal feedback.
 * `useDroppableId` (optional): if set to true, the `combo` array in this object uses
