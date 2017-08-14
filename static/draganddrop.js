@@ -60,13 +60,20 @@
       for (var id in this.draggablesPayload) {
         if (this.draggablesPayload.hasOwnProperty(id)) {
           var text = this.draggablesPayload[id].content;
+          var customClass = this.draggablesPayload[id].htmlclass;
           
-          $('<span>')
+          var dragElem = $('<span>');
+          dragElem
             .addClass(self.settings.draggable_class)
             .attr('data-label', id)
             .attr('draggable', 'true')
             .html(text)
             .appendTo(self.draggablesContainer);
+          if (customClass) {
+            // set custom class to the draggable element, if the payload defines it
+            // multiple classes may be given in one space-separated string
+            dragElem.addClass(customClass);
+          }
         }
       }
       
@@ -264,6 +271,10 @@
       droppableElem.removeClass('correct wrong');
       if (isCorrect) {
         droppableElem.addClass('correct');
+        if (dragPayload.htmlclass) {
+          droppableElem.addClass(dragPayload.htmlclass);
+        }
+        
         if (!wasAnswered) {
           this.correctAnswers++;
         }
