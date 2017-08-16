@@ -98,28 +98,30 @@
         self.latestAnswers[uniqueId] = null; // latest answer (draggable label) on this droppable
       })
       .on('dragover', function(e) {
-        self.handleDragOver(e);
+        self.handleDragOver(e, $(this));
       })
       .on('dragenter', function(e) {
-        self.handleDragEnter(e);
+        self.handleDragEnter(e, $(this));
       })
       .on('dragleave', function(e) {
-        self.handleDragLeave(e);
+        self.handleDragLeave(e, $(this));
       })
       .on('drop', function(e) {
-        self.handleDrop(e);
+        self.handleDrop(e, $(this));
       })
       .on('click', function(e) {
         // show feedback again for this droppable
-        self.handleDroppableClick(e);
+        self.handleDroppableClick(e, $(this));
       });
+      // Note about event handlers: this is the element which the handler is attached to,
+      // while event.target may be a child element.
       
       this.draggablesContainer.find(this.settings.draggable_selector)
         .on('dragstart', function(e) {
-          self.handleDragStart(e);
+          self.handleDragStart(e, $(this));
         })
         .on('dragend', function(e) {
-          self.handleDragEnd(e);
+          self.handleDragEnd(e, $(this));
         });
       
       // use fixed positioning for the info and draggables containers
@@ -133,13 +135,25 @@
     },
     
     // Event handlers for drag-and-drop (native HTML5 API)
-    handleDragStart: function(e) {
+    handleDragStart: function(e, dragElem) {
       e.originalEvent.dataTransfer.effectAllowed = 'copy';
       e.originalEvent.dataTransfer.dropEffect = 'copy';
       
-      e.target.style.opacity = '0.5'; // e.target is the source node (draggable)
+      // if <img> is used in the draggable, set it to the drag image so that
+      // the drag image never includes the draggable box by default, only the image
+      var draggableImg = dragElem.find('img');
+      if (draggableImg.length) {
+        var img = draggableImg.get(0);
+        try {
+          e.originalEvent.dataTransfer.setDragImage(img, img.width / 2, 0);
+        } catch (ex) {
+          // ignore, some browsers do not support setting the drag image
+        }
+      }
       
-      var dragData = $(e.target).data('label');
+      dragElem.css('opacity', '0.5');
+      
+      var dragData = dragElem.data('label');
       try {
         e.originalEvent.dataTransfer.setData('text/plain', dragData);
       } catch (ex) {
@@ -149,7 +163,7 @@
       this.dragData = dragData; // keep the data in a variable since the drag-and-drop API is unreliable
     },
     
-    handleDragOver: function(e) {
+    handleDragOver: function(e, dropElem) {
       var draggableLabel = null;
       try {
         draggableLabel = e.originalEvent.dataTransfer.getData('text/plain');
@@ -161,7 +175,7 @@
         // fallback when the native API fails
         draggableLabel = this.dragData;
       }
-      if (draggableLabel && this.draggablesPayload[draggableLabel] && !$(e.target).hasClass('correct')) {
+      if (draggableLabel && this.draggablesPayload[draggableLabel] && !dropElem.hasClass('correct')) {
         e.preventDefault(); // allow drop
         
         e.originalEvent.dataTransfer.dropEffect = 'copy';
@@ -171,22 +185,19 @@
       return true;
     },
     
-    handleDragEnter: function(e) {
-      // e.target is the current hover target (droppable)
+    handleDragEnter: function(e, dropElem) {
       e.preventDefault(); // really needed?
-      if (!$(e.target).hasClass('correct')) {
+      if (!dropElem.hasClass('correct')) {
         // the droppable has not been correctly answered yet so add a class for styling while hovering over it
-        $(e.target).addClass('over');
+        dropElem.addClass('over');
       }
     },
     
-    handleDragLeave: function(e) {
-      $(e.target).removeClass('over'); // e.target is previous target element (droppable)
+    handleDragLeave: function(e, dropElem) {
+      dropElem.removeClass('over');
     },
     
-    handleDrop: function(e) {
-      // e.target is the current targeted droppable element
-
+    handleDrop: function(e, dropElem) {
       e.stopPropagation(); // stops the browser from redirecting
       e.preventDefault();
 
@@ -202,15 +213,14 @@
         draggableLabel = this.dragData;
       }
       
-      var droppableLabel = $(e.target).data('label');
-      this.checkAnswer(draggableLabel, droppableLabel, $(e.target));
+      var droppableLabel = dropElem.data('label');
+      this.checkAnswer(draggableLabel, droppableLabel, dropElem);
 
       return false;
     },
 
-    handleDragEnd: function(e) {
-      // e.target is the draggable element
-      $(e.target).css('opacity', ''); // remove the inline style set in dragstart
+    handleDragEnd: function(e, dragElem) {
+      dragElem.css('opacity', ''); // remove the inline style set in dragstart
       this.element.find(this.settings.droppable_selector).removeClass('over');
       this.dragData = null;
       
@@ -222,11 +232,11 @@
     },
     
     // show feedback for a droppable again if it is clicked
-    handleDroppableClick: function(e) {
+    handleDroppableClick: function(e, dropElem) {
       e.stopPropagation();
       e.preventDefault();
       
-      var dropId = $(e.target).data('id');
+      var dropId = dropElem.data('id');
       var answers = this.questionAnswered[dropId];
       if (answers.length < 1) {
         // not answered yet, do nothing
@@ -234,7 +244,7 @@
       }
       
       var draggableLabel = this.latestAnswers[dropId];
-      var droppableLabel = $(e.target).data('label');
+      var droppableLabel = dropElem.data('label');
       var feedback = this.getFeedback(draggableLabel, droppableLabel, dropId);
       this.updateFeedback(feedback, this.isCorrectAnswer(draggableLabel, droppableLabel));
       
@@ -479,6 +489,9 @@
     disableDraggable: function(draggableLabel) {
       var dragElem = this.draggablesContainer.find(this.settings.draggable_selector + "[data-label='" + draggableLabel + "']");
       dragElem.attr('draggable', 'false').addClass('disabled');
+      // if the draggable contains <img> or <a> elements, they are draggable by default
+      // and dragging must be disabled separately
+      dragElem.find('img, a').attr('draggable', 'false');
     },
     
     updatePoints: function() {
