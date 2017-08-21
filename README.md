@@ -105,6 +105,7 @@ Example JSON:
         "append": "This new text is appended to the droppable content (with a different font to stand out)",
         "prepend": "Like append, but prepend to the droppable content",
       },
+      "htmlclass": "mycustomclass"
     },
     "draglabel2": {
       "content": "the"
@@ -134,6 +135,14 @@ The configuration for each draggable label may use the following keys:
   first read from the droppables section.
 * `reuse`: can this draggable be used again after it has been dragged to the correct droppable?
   Accepts values `true` or `false`, defaults to `true`
+* `htmlclass`: if specified, this value is added to the HTML class attribute of
+  the draggable element. Furthermore, it is added to the droppable element when
+  the draggable is dragged to a correct droppable. The exercise XML file may define
+  new CSS style rules (via `<style>` or `<link>` elements) that apply new visual
+  effects, such as colours and fonts, to the custom class. Multiple classes may
+  be given separated by spaces. As the content type already includes a number of
+  CSS rules, using the `!important` modifier may be necessary to override some
+  rules.
 * `reveal`: what is revealed in the droppable when this draggable is dragged there?
   By default, the droppable content is replaced with the draggable `content`, which is
   often the desired effect when dragging text onto empty holes.
