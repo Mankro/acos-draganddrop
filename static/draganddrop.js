@@ -300,7 +300,7 @@
       }
       
       // reveal text defined by the draggable in the droppable
-      this.revealAnswerInDroppable(draggableLabel, droppableElem);
+      this.revealAnswerInDroppable(draggableLabel, droppableElem, isCorrect);
       
       this.updatePoints();
       this.updateCorrectDragsLeftMessage();
@@ -520,33 +520,71 @@
       }
     },
     
-    revealAnswerInDroppable: function(draggableLabel, droppableElem) {
+    revealAnswerInDroppable: function(draggableLabel, droppableElem, isCorrect) {
       var dragPayload = this.draggablesPayload[draggableLabel];
       // if the reveal value is not defined in the payload,
       // the default action is to replace the droppable content with the draggable content
-      if (dragPayload.reveal === false) {
+      if (dragPayload.reveal === false ||
+          (dragPayload.revealCorrect === false && isCorrect) ||
+          (dragPayload.revealWrong === false && !isCorrect)) {
         // if the reveal value is set to false in the payload,
         // do not reveal anything and keep the droppable text intact
         return;
       }
       
+      // helper function for reading different types of reveal effects from the payload
+      var getRevealValues = function(obj, arr) {
+        var keys = ['replace', 'append', 'prepend'];
+        for (var i = 0; i < keys.length; ++i) {
+          if (obj.hasOwnProperty(keys[i])) {
+            arr[i] = obj[keys[i]];
+          }
+        }
+      };
+      
+      var replace = false;
+      var append = false;
+      var prepend = false;
+      var revealArray = [replace, append, prepend];
+      var useDefault = false;
+      
+      /* The draggable paylod may define the same reveal effects for both correct and
+      incorrect answers, or separately for correct and incorrect answers. If the shared
+      reveal effect is defined (field reveal), it is always used and the others are
+      ignored (fields revealCorrect and revealWrong). Any kind of reveal is an object
+      in the payload with one of the keys defined: replace, append, or prepend.
+      */
       if (dragPayload.reveal) {
-        // nested <span> elements are used to hack with pointer events in the drag-and-drop API
-        // and they are also used to separate the prepend and append reveal values
-        // from the other droppable content
-        droppableElem.find('span.drop-reveal').remove(); // remove previous reveals (append and prepend)
-        if (dragPayload.reveal.replace) {
-          droppableElem.html('<span>' + dragPayload.reveal.replace + '</span>');
-        }
-        if (dragPayload.reveal.append) {
-          droppableElem.append('<span class="small drop-reveal"> [' + dragPayload.reveal.append + ']</span>');
-        }
-        if (dragPayload.reveal.prepend) {
-          droppableElem.prepend('<span class="small drop-reveal">[' + dragPayload.reveal.prepend + '] </span>');
-        }
+        getRevealValues(dragPayload.reveal, revealArray);
+      } else if (dragPayload.revealCorrect && isCorrect) {
+        getRevealValues(dragPayload.revealCorrect, revealArray);
+      } else if (dragPayload.revealWrong && !isCorrect) {
+        getRevealValues(dragPayload.revealWrong, revealArray);
       } else {
-        // by default, replace the droppable content with the draggable content
-        droppableElem.html('<span>' + dragPayload.content + '</span>');
+        // use default behaviour: replace with the draggable content
+        useDefault = true;
+      }
+      
+      if (useDefault) {
+        replace = dragPayload.content;
+      } else {
+        replace = revealArray[0];
+        append = revealArray[1];
+        prepend = revealArray[2];
+      }
+      
+      // nested <span> elements are used to hack with pointer events in the drag-and-drop API
+      // and they are also used to separate the prepend and append reveal values
+      // from the other droppable content
+      droppableElem.find('span.drop-reveal').remove(); // remove previous reveals (append and prepend)
+      if (replace) {
+        droppableElem.html('<span>' + replace + '</span>');
+      }
+      if (append) {
+        droppableElem.append('<span class="small drop-reveal"> [' + append + ']</span>');
+      }
+      if (prepend) {
+        droppableElem.prepend('<span class="small drop-reveal">[' + prepend + '] </span>');
       }
     },
     
