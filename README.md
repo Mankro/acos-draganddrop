@@ -159,6 +159,13 @@ The configuration for each draggable label may use the following keys:
   become unreadable if complete sentences were replaced with just their category,
   like "topic sentence".
 
+* `revealCorrect` and `revealWrong`: if you want to have different reveal effects depending
+  on whether the answer is correct or incorrect, use `revealCorrect` and `revealWrong`
+  instead of `reveal`. You do not have to define both if the default effect is suitable
+  for the other one (default: replace with the draggable content). All reveal objects
+  use the same keys as previously explained under `reveal`: `replace`, `append`,
+  and `prepend`.
+
 
 ## JSON definitions for the droppables
 
