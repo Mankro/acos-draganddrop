@@ -164,7 +164,9 @@ The configuration for each draggable label may use the following keys:
   instead of `reveal`. You do not have to define both if the default effect is suitable
   for the other one (default: replace with the draggable content). All reveal objects
   use the same keys as previously explained under `reveal`: `replace`, `append`,
-  and `prepend`.
+  and `prepend`. The value `false` may be used to disable the reveal effect completely.
+  For example, you may disable the reveal effect for incorrect answers and use
+  some effect for correct answers.
 
 
 ## JSON definitions for the droppables
