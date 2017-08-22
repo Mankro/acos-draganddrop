@@ -33,6 +33,7 @@
     this.questionAnswered = {};
     this.droppablesByLabel = {}; // array of droppable unique ids for each droppable label (key: droppable label)
     this.latestAnswers = {}; // latest answer for each droppable (key: droppable unique id)
+    this.origDropContents = {}; // original HTML contents of the droppables (key: droppable unique id)
     this.feedbackDiv = this.element.find(this.settings.feedback_selector);
     this.pointsDiv = this.element.find(this.settings.points_selector);
     this.completeDiv = this.element.find(this.settings.completed_selector);
@@ -96,6 +97,8 @@
         // on this droppable (no duplicate values are added to the array)
         
         self.latestAnswers[uniqueId] = null; // latest answer (draggable label) on this droppable
+        
+        self.origDropContents[uniqueId] = $(this).html();
       })
       .on('dragover', function(e) {
         self.handleDragOver(e, $(this));
@@ -521,6 +524,7 @@
     },
     
     revealAnswerInDroppable: function(draggableLabel, droppableElem, isCorrect) {
+      var dropId = droppableElem.data('id');
       var dragPayload = this.draggablesPayload[draggableLabel];
       // if the reveal value is not defined in the payload,
       // the default action is to replace the droppable content with the draggable content
@@ -529,6 +533,9 @@
           (dragPayload.revealWrong === false && !isCorrect)) {
         // if the reveal value is set to false in the payload,
         // do not reveal anything and keep the droppable text intact
+        // The original content is set back here incase other answers have replaced
+        // the droppable content with something else.
+        droppableElem.html(this.origDropContents[dropId]);
         return;
       }
       
@@ -568,24 +575,30 @@
       if (useDefault) {
         replace = dragPayload.content;
       } else {
-        replace = revealArray[0];
+        replace = revealArray[0]; // the content that replaces the old one
         append = revealArray[1];
         prepend = revealArray[2];
       }
+      var prependWrap = '';
+      var replaceWrap = '';
+      var appendWrap = '';
       
       // nested <span> elements are used to hack with pointer events in the drag-and-drop API
       // and they are also used to separate the prepend and append reveal values
       // from the other droppable content
-      droppableElem.find('span.drop-reveal').remove(); // remove previous reveals (append and prepend)
       if (replace) {
-        droppableElem.html('<span>' + replace + '</span>');
+        replaceWrap = '<span>' + replace + '</span>';
+      } else {
+        replaceWrap = this.origDropContents[dropId];
       }
       if (append) {
-        droppableElem.append('<span class="small drop-reveal"> [' + append + ']</span>');
+        appendWrap = '<span class="small drop-reveal"> [' + append + ']</span>';
       }
       if (prepend) {
-        droppableElem.prepend('<span class="small drop-reveal">[' + prepend + '] </span>');
+        prependWrap = '<span class="small drop-reveal">[' + prepend + '] </span>';
       }
+      
+      droppableElem.html(prependWrap + replaceWrap + appendWrap);
     },
     
     detachDragEventHandlers: function() {

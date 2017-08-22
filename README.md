@@ -146,11 +146,14 @@ The configuration for each draggable label may use the following keys:
 * `reveal`: what is revealed in the droppable when this draggable is dragged there?
   By default, the droppable content is replaced with the draggable `content`, which is
   often the desired effect when dragging text onto empty holes.
-  Accepts values `false` (to disable the reveal effect completely in the droppable) or
-  an object with one of the following keys:
+  Accepts values `false` (to disable the reveal effect completely in the droppable,
+  though it returns the droppable content to its original initial state if
+  another answer has modified it) or an object with one of the following keys:
   - `replace`: replace the droppable content with this HTML string
   - `append`: append this HTML string to the end of the droppable content
-    (smaller font size and surrounding square brackets are added automatically)
+    (smaller font size and surrounding square brackets are added automatically).
+    If another answer has modified the droppable content, the content is replaced
+    with the original droppable content with the new appended value.
   - `prepend`: like `append`, but the HTML string is prepended to the start of the droppable content
   
   The `append` and `prepend` values may be used, for example, when the student is
