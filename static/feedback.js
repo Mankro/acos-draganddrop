@@ -103,7 +103,7 @@ function initDragAndDropFeedback(element, options, $, window, document, undefine
         if (answers.length > 1) {
           var answerSelect = $('<select>');
           for (var i = 0; i < answers.length; ++i) {
-            var draggableText = stripHTML(self.draggablesPayload[answers[i]].content);
+            var draggableText = getTextContent(self.draggablesPayload[answers[i]].content, answers[i]);
             var opt = $('<option>');
             opt.attr('value', answers[i]).text(draggableText);
             if (i === answers.length - 1) {
@@ -113,7 +113,7 @@ function initDragAndDropFeedback(element, options, $, window, document, undefine
             opt.appendTo(answerSelect);
           }
           // insert the select menu into the DOM after the droppable
-          $(this).after(answerSelect);
+          droppableElem.after(answerSelect);
           // event handler when the user selects something
           answerSelect.change(function() {
             var dragLabel = answerSelect.val();
@@ -395,6 +395,48 @@ function initDragAndDropFeedback(element, options, $, window, document, undefine
   function stripHTML(htmlString) {
     // must wrap the argument string inside a new element so that we can get the whole text content
     return $('<div>').html(htmlString).text().trim();
+  }
+  
+  function getTextContent(htmlString, label) {
+    if (!htmlString) {
+      return label;
+    }
+    var text = stripHTML(htmlString);
+    if (text) {
+      return text;
+    }
+    
+    // text content of the draggable is empty, let's see if there is an <img>
+    var nodes = $.parseHTML(htmlString);
+    var img = null;
+    for (var i = 0; i < nodes.length; ++i) {
+      if (nodes[i].nodeName.toUpperCase() === 'IMG') {
+        img = $(nodes[i]);
+        break;
+      }
+    }
+    
+    if (!img) {
+      // use the label since we cannot get any text from the HTML
+      return label;
+    }
+    
+    var alt = img.attr('alt'); // check the alt attr of the img
+    if (alt) {
+      alt = alt.trim();
+      if (alt)
+        return alt;
+    }
+    
+    // try reading a filename from the img src URL
+    var src = img.attr('src');
+    if (src) {
+      // take the last part of the URL (after the last /) and assume it is a filename of the image
+      // works if src has no / since lastIndexOf returns -1 then
+      return src.substring(src.lastIndexOf('/') + 1);
+    }
+    
+    return label;
   }
   
   // initialize an instance of the class
