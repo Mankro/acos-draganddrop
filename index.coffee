@@ -1,7 +1,7 @@
 fs = require('fs')
 path = require('path')
 nunjucks = require('nunjucks')
-pacutil = require('clickdragfillin-util')
+pacutil = require('acos-clickdragfillin-util')
 
 # nunjucks views (templates)
 njEnv = nunjucks.configure(path.join(__dirname, 'views'))
@@ -14,12 +14,6 @@ exerciseCache = {}
 finalFeedbackPayloadTransformer = (payload, serverAddress) ->
   for own label, data of payload.draggables
     delete data.reuse
-    pacutil.convertRelativeUrlsInHtmlStrings(data.feedback, serverAddress) if data.feedback?
-  for own label, data of payload.droppables
-    pacutil.convertRelativeUrlsInHtmlStrings(data.feedback, serverAddress) if data.feedback?
-  if payload.combinedfeedback?
-    for comboObj in payload.combinedfeedback
-      comboObj.feedback = pacutil.convertRelativeUrlsInHtml comboObj.feedback, serverAddress
   null
 
 

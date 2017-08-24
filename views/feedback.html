@@ -1,10 +1,20 @@
-<div class="draganddrop">
-    <style>{{ cssStyle|safe }}</style>
-    <script type="text/javascript">
-      window.draganddrop = {{ payload|safe }};
-    </script>
-    <script src="{{ serverUrl|safe }}/static/draganddrop/feedback.js"></script>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Drag-and-drop final feedback</title>
+  <base href="{{ serverUrl|safe }}">
+  {{ headContent|safe }}
+  <link href="/static/draganddrop/feedback.css" rel="stylesheet">
+  <script src="/static/draganddrop/jquery.min.js"></script>
+  <script type="text/javascript">
+    window.draganddrop = {{ payload|safe }};
+  </script>
+  <script src="/static/draganddrop/feedback.js"></script>
+</head>
+<body>
 
+<div class="draganddrop">
     <div class="draganddrop-content">
         {{ exercise|safe }}
     </div>
@@ -12,10 +22,13 @@
     <div class="draganddrop-info">
         <div class="draganddrop-feedback"></div>
         <div class="draganddrop-points">
-          <b>You scored {{ score }}&nbsp;%.</b><br>
+          <b>You scored {{ score }}%.</b><br>
           Correct: {{ correctAnswers }}<br>
           Wrong: {{ incorrectAnswers }}<br>
         </div>
     </div>
 </div>
+
+</body>
+</html>
 
