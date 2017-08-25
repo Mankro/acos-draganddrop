@@ -14,6 +14,7 @@ exerciseCache = {}
 finalFeedbackPayloadTransformer = (payload, serverAddress) ->
   for own label, data of payload.draggables
     delete data.reuse
+  delete payload.finalcomment
   null
 
 

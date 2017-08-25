@@ -55,7 +55,7 @@
   overflow-y: scroll;
 }
 
-.draganddrop-feedback {
+.draganddrop-feedback, .draganddrop-finalcomment {
   padding: 1em;
 }
 

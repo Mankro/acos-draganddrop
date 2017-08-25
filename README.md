@@ -281,6 +281,42 @@ one combination. The objects use the following keys:
   By default, labels are used.
 
 
+# Final comment (extra feedback after completing the exercise)
+
+It is possible to show extra feedback to the student after the exercise has been completed.
+The extra feedback or final comment may depend on the student's final score, in addition
+to a common feedback phrase that is shown to everyone. The final comments and their
+score limits are defined in the JSON payload under a top-level key `finalcomment`.
+Final comments could be, for example, used to emphasize the important topics
+studied in the exercise, to provide pointers to suitable extra reading materials,
+or to just praise the student. Using final comments is optional.
+
+Example JSON:
+```
+{
+  "draggables": {
+    ...
+  },
+  "finalcomment": {
+    "common": "This phrase is shown to everyone after completing the exercise.",
+    "50": "You got only 50% or less of the available points. You can do better!",
+    "75": "Good job!",
+    "99": "Excellent work!",
+    "100": "Great, you got everything correct!"
+  }
+}
+```
+
+`finalcomment` must be an object (if it is used at all) and it may contain the
+key `common` to define feedback that is shown to everyone. Other keys should be
+score limits that define the feedback at the final score less than or equal to
+the limit. At most one of the score-based feedback phrases is selected at a time,
+thus the limits form brackets between each other. In the example JSON above,
+the feedback for key `50` is active if the student gains 0-50% score, while
+the feedback `75` is active for scores between 51 and 75%. The highest defined
+limit should be `100` or else there is no score-based feedback for perfect solutions.
+
+
 # Custom stylesheets
 
 Custom CSS styles can be defined using the `<style>` tag. The `<html>` and `<head>` tags must be used in this case.

@@ -18,6 +18,8 @@
     complete_uploading_msg_attr: 'data-msg-complete-uploading',
     complete_uploaded_msg_attr: 'data-msg-complete-uploaded',
     complete_error_msg_attr: 'data-msg-complete-error',
+    completed_msg_selector: '.draganddrop-complete-msg',
+    final_comment_selector: '.draganddrop-finalcomment',
     final_points_msg_attr: 'data-msg-final',
     drags_left_msg_selector: '.draganddrop-dragsleftmsg', // correct answers left
     drags_left_singular_msg_attr: 'data-msg-singular',
@@ -37,6 +39,8 @@
     this.feedbackDiv = this.element.find(this.settings.feedback_selector);
     this.pointsDiv = this.element.find(this.settings.points_selector);
     this.completeDiv = this.element.find(this.settings.completed_selector);
+    this.completeMsg = this.element.find(this.settings.completed_msg_selector);
+    this.finalComment = this.element.find(this.settings.final_comment_selector);
     this.correctPointsElem = this.element.find(this.settings.correct_answers_selector);
     this.wrongPointsElem = this.element.find(this.settings.wrong_answers_selector);
     this.dragsLeftMsgDiv = this.element.find(this.settings.drags_left_msg_selector);
@@ -444,7 +448,7 @@
       if (this.correctAnswers >= this.maxCorrectAnswers) {
         this.completed = true;
         this.dragsLeftMsgDiv.hide();
-        this.completeDiv.text(this.completeDiv.attr(this.settings.complete_msg_attr));
+        this.completeMsg.text(this.completeDiv.attr(this.settings.complete_msg_attr));
         this.completeDiv.removeClass('hide').show();
         this.grade();
         this.sendLog();
@@ -456,13 +460,15 @@
       
       if (window.location.pathname.substring(0, 6) !== '/html/') {
         // hide this uploading message when acos html protocol is used since it does not store any grading
-        this.completeDiv.text(this.completeDiv.attr(this.settings.complete_uploading_msg_attr));
+        this.completeMsg.text(this.completeDiv.attr(this.settings.complete_uploading_msg_attr));
       }
       
       var scorePercentage = Math.round(this.maxCorrectAnswers / (this.correctAnswers + this.incorrectAnswers) * 100);
       
       // show final points
       this.addFinalPointsString(this.pointsDiv, scorePercentage);
+      // final comment may be defined in the exercise payload and depends on the final points
+      this.showFinalComment(scorePercentage);
       // feedback for the grading event that is sent to the server
       var feedback = this.buildFinalFeedback();
       if (window.ACOS) {
@@ -470,13 +476,13 @@
         ACOS.sendEvent('grade', { max_points: 100, points: scorePercentage, feedback: feedback }, function(content, error) {
           if (error) {
             // error in uploading the grading result to the server, show a message to the user
-            self.completeDiv.text(self.completeDiv.attr(self.settings.complete_error_msg_attr) + error.error);
+            self.completeMsg.text(self.completeDiv.attr(self.settings.complete_error_msg_attr) + error.error);
             return;
           }
           // the grading result has been sent to the server
           if (window.location.pathname.substring(0, 6) !== '/html/') {
             // hide this uploading message when acos html protocol is used since it does not store any grading
-            self.completeDiv.text(self.completeDiv.attr(self.settings.complete_uploaded_msg_attr));
+            self.completeMsg.text(self.completeDiv.attr(self.settings.complete_uploaded_msg_attr));
           }
         });
       }
@@ -521,6 +527,47 @@
       } else {
         this.feedbackDiv.addClass('wrong');
       }
+    },
+    
+    showFinalComment: function(score) {
+      var payload = window.draganddrop.finalcomment;
+      if (!payload) {
+        return;
+      }
+      var html = '';
+      if (payload.common) {
+        // always show this comment
+        html += payload.common + '<br>';
+      }
+      
+      var limits = [];
+      // convert limits to numbers so that they may be compared
+      for (var key in payload) {
+        if (payload.hasOwnProperty(key)) {
+          var limit = parseInt(key, 10);
+          if (!isNaN(limit)) {
+            limits.push([limit, key]);
+          }
+        }
+      }
+      
+      limits.sort(function(a, b) {
+        if (a[0] < b[0])
+          return -1;
+        else if (a[0] > b[0])
+          return 1;
+        else
+          return 0;
+      });
+      
+      var feedbackIdx = limits.findIndex(function(elem) {
+        return score <= elem[0];
+      });
+      if (feedbackIdx !== -1) {
+        html += payload[limits[feedbackIdx][1]];
+      }
+      
+      this.finalComment.html(html);
     },
     
     revealAnswerInDroppable: function(draggableLabel, droppableElem, isCorrect) {
