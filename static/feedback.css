@@ -50,6 +50,7 @@
 .draganddrop-info.fixed {
   position: fixed;
   bottom: 0px;
+  width: 98%;
   max-height: 200px;
   overflow-y: scroll;
 }
