@@ -95,6 +95,10 @@ function initDragAndDropFeedback(element, options, $, window, document, undefine
         // set correct or wrong style
         if (isCorrect) {
           droppableElem.addClass('correct');
+          var dragPayload = self.draggablesPayload[draggableLabel];
+          if (dragPayload.htmlclass) {
+            droppableElem.addClass(dragPayload.htmlclass);
+          }
         } else {
           droppableElem.addClass('wrong');
         }
@@ -116,6 +120,13 @@ function initDragAndDropFeedback(element, options, $, window, document, undefine
           droppableElem.after(answerSelect);
           // event handler when the user selects something
           answerSelect.change(function() {
+            // remove extra HTML classes from the droppable that were based on the previous answer
+            var previousAnswer = self.latestAnswers[uniqueId];
+            var prevDragPayload = self.draggablesPayload[previousAnswer];
+            if (prevDragPayload.htmlclass) {
+              droppableElem.removeClass(prevDragPayload.htmlclass);
+            }
+            
             var dragLabel = answerSelect.val();
             self.latestAnswers[uniqueId] = dragLabel;
             self.showFeedback(dragLabel, droppableElem);
@@ -161,6 +172,10 @@ function initDragAndDropFeedback(element, options, $, window, document, undefine
       droppableElem.removeClass('correct wrong');
       if (isCorrect) {
         droppableElem.addClass('correct');
+        var dragPayload = this.draggablesPayload[draggableLabel];
+        if (dragPayload.htmlclass) {
+          droppableElem.addClass(dragPayload.htmlclass);
+        }
       } else {
         droppableElem.addClass('wrong');
       }
