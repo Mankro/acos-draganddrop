@@ -69,7 +69,7 @@ Draganddrop =
     'description': 'Content type for drag-and-drop exercises.',
     'author': 'Markku Riekkinen',
     'license': 'MIT',
-    'version': '0.2.0',
+    'version': '0.3.0',
     'url': ''
   }
 
