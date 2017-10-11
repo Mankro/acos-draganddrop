@@ -318,8 +318,8 @@
         // with the label a log analyzer can check if the answer was correct or not
         // (exercise JSON payload has the same labels)
         // droppable IDs are unique, labels may be reused
-        // no user ID is used here
         // if this content type wants to log multiple things, we should add some type key to the payload (type: "drag")
+        // the aplus protocol adds a user id to the payload
         var logPayload = {
           qid: dropId, // question (droppable)
           qlabel: droppableLabel,
