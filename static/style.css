@@ -18,7 +18,7 @@
 }
 
 .draggable {
-  padding: 0.5em;
+  padding: 0.2em;
   background-color: rgb(223, 240, 216);
   border: solid 1px black;
   margin: 1px; /* some empty space between the draggable boxes */
@@ -44,7 +44,7 @@
 .droppable {
   /* droppable spaces between words should not be collapsed (zero width) at the end of lines */
   white-space: pre-wrap;
-  border: 0.2em dotted #aaaaaa;
+  border: 0.15em dotted #aaaaaa;
 }
 
 .droppable * {
