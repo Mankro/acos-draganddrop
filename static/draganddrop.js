@@ -255,6 +255,22 @@
       var feedback = this.getFeedback(draggableLabel, droppableLabel, dropId);
       this.updateFeedback(feedback, this.isCorrectAnswer(draggableLabel, droppableLabel));
       
+      if (!this.completed) {
+        // Log this click event (which shows that the learner wanted to study the feedback again).
+        // The log event is sent when the exercise is completed and thus
+        // it is unnecessary to keep track of clicks after that.
+        var logPayload = {
+          qid: dropId, // question (droppable)
+          qlabel: droppableLabel,
+          alabel: draggableLabel, // answer (draggable)
+          time: new Date().toISOString(), // current time
+          click: true, // separate clicks and drags
+          // click events are not real answers as they only show the feedback again
+          // for a previously made answer
+        };
+        this.answerLog.push(logPayload);
+      }
+      
       return false;
     },
     
@@ -312,23 +328,24 @@
       this.updatePoints();
       this.updateCorrectDragsLeftMessage();
       
-      // save the answer for logging (only once for each draggable-droppable combination)
+      // save the answer for logging (even if the same answer had already been made
+      // since it may be useful data)
       // the full log is uploaded to the ACOS server at the end
-      if (!wasAnswered) {
-        // with the label a log analyzer can check if the answer was correct or not
-        // (exercise JSON payload has the same labels)
-        // droppable IDs are unique, labels may be reused
-        // if this content type wants to log multiple things, we should add some type key to the payload (type: "drag")
-        // the aplus protocol adds a user id to the payload
-        var logPayload = {
-          qid: dropId, // question (droppable)
-          qlabel: droppableLabel,
-          alabel: draggableLabel, // answer (draggable)
-          time: new Date().toISOString(), // current time
-        };
-        
-        this.answerLog.push(logPayload);
+      // with the label a log analyzer can check if the answer was correct or not
+      // (exercise JSON payload has the same labels)
+      // droppable IDs are unique, labels may be reused
+      // the aplus protocol adds a user id to the payload
+      var logPayload = {
+        qid: dropId, // question (droppable)
+        qlabel: droppableLabel,
+        alabel: draggableLabel, // answer (draggable)
+        time: new Date().toISOString(), // current time
+      };
+      if (wasAnswered) {
+        // this answer had already been made previously
+        logPayload.rerun = true;
       }
+      this.answerLog.push(logPayload);
       
       this.checkCompletion();
     },
