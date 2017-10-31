@@ -1,5 +1,6 @@
 .draganddrop {
   font-family: monospace, Lucida;
+  font-size: 14px;
 }
 
 .draganddrop-draggables {
@@ -102,12 +103,25 @@
   overflow-y: scroll;
 }
 
-.draganddrop-feedback, .draganddrop-complete {
+.draganddrop-feedback {
   padding: 1em;
 }
 
 .draganddrop-combinedfeedback {
   color: rgb(51, 51, 255);
+}
+
+.draganddrop-complete-msg {
+  padding: 0.5em 1em 0.1em;
+}
+
+.draganddrop-finalcomment {
+  background-color: rgb(159, 224, 244);
+  padding: 0.1em 1em 0.5em;
+}
+
+.draganddrop-correct-answers {
+  padding-right: 1em;
 }
 
 .correct {

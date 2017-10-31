@@ -14,17 +14,17 @@
           data-msg-complete-uploaded="Exercise finished. Your submission has been uploaded to the server."
           data-msg-complete-error="Exercise finished, but your submission was not successfully uploaded to the server due to an error: ">
           <div class="draganddrop-complete-msg"></div>
-          <div class="draganddrop-finalcomment"></div>
+          <div class="draganddrop-finalcomment hide"></div>
         </div>
         <div class="draganddrop-feedback"></div>
-        <div class="draganddrop-dragsleftmsg hide"
-            data-msg-plural="&lt;b&gt;{counter} more correct answers left!&lt;/b&gt;"
-            data-msg-singular="&lt;b&gt;{counter} more correct answer left!&lt;/b&gt;">
-        </div>
         <div class="draganddrop-points hide"
-            data-msg-final="&lt;b&gt;You scored {score}%.&lt;/b&gt;&lt;br&gt;">
-          Correct: <span class="draganddrop-correct-answers"></span><br>
-          Wrong: <span class="draganddrop-wrong-answers"></span><br>
+            data-msg-final="&lt;b&gt;You scored {score}%.&lt;/b&gt;">
+          <span class="draganddrop-dragsleftmsg hide"
+              data-msg-plural="&lt;b&gt;{counter} more correct answers left!&lt;/b&gt;"
+              data-msg-singular="&lt;b&gt;{counter} more correct answer left!&lt;/b&gt;">
+          </span>
+          Correct: <span class="draganddrop-correct-answers"></span>
+          Wrong: <span class="draganddrop-wrong-answers"></span>
         </div>
     </div>
 </div>

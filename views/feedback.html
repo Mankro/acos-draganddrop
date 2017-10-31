@@ -22,11 +22,13 @@
     <div class="draganddrop-info">
         <div class="draganddrop-feedback"></div>
         <div class="draganddrop-points">
-          <b>You scored {{ score }}%.</b><br>
-          Correct: {{ correctAnswers }}<br>
-          Wrong: {{ incorrectAnswers }}<br>
+          <b>You scored {{ score }}%.</b>
+          Correct: <span class="draganddrop-correct-answers">{{ correctAnswers }}</span>
+          Wrong: {{ incorrectAnswers }}
         </div>
+        {% if finalComment %}
         <div class="draganddrop-finalcomment">{{ finalComment|safe }}</div>
+        {% endif %}
     </div>
 </div>
 

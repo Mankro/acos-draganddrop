@@ -585,6 +585,7 @@
       }
       
       this.finalComment.html(html);
+      this.finalComment.removeClass('hide').show();
     },
     
     revealAnswerInDroppable: function(draggableLabel, droppableElem, isCorrect) {
