@@ -326,6 +326,7 @@ function initDragAndDropFeedback(element, options, $, window, document, undefine
     revealAnswerInDroppable: function(draggableLabel, droppableElem, isCorrect) {
       var dropId = droppableElem.data('id');
       var dragPayload = this.draggablesPayload[draggableLabel];
+      var dropPayload = this.droppablesPayload[droppableElem.data('label')];
       // if the reveal value is not defined in the payload,
       // the default action is to replace the droppable content with the draggable content
       if (dragPayload.reveal === false ||
@@ -355,13 +356,23 @@ function initDragAndDropFeedback(element, options, $, window, document, undefine
       var revealArray = [replace, append, prepend];
       var useDefault = false;
       
-      /* The draggable paylod may define the same reveal effects for both correct and
+      /* The reveal effects may be defined either in the droppable payload or in
+      the draggable payload. The droppable payload supports revealCorrect and revealWrong
+      fields, while the draggable payload additionally supports reveal (that affects
+      all cases). The reveal effects in the droppable are used with the first priority
+      if they are defined and apply to the situation (correct or incorrect answer).
+      
+      The draggable paylod may define the same reveal effects for both correct and
       incorrect answers, or separately for correct and incorrect answers. If the shared
       reveal effect is defined (field reveal), it is always used and the others are
       ignored (fields revealCorrect and revealWrong). Any kind of reveal is an object
       in the payload with one of the keys defined: replace, append, or prepend.
       */
-      if (dragPayload.reveal) {
+      if (dropPayload.revealCorrect && isCorrect) {
+        getRevealValues(dropPayload.revealCorrect, revealArray);
+      } else if (dropPayload.revealWrong && !isCorrect) {
+        getRevealValues(dropPayload.revealWrong, revealArray);
+      } else if (dragPayload.reveal) {
         getRevealValues(dragPayload.reveal, revealArray);
       } else if (dragPayload.revealCorrect && isCorrect) {
         getRevealValues(dragPayload.revealCorrect, revealArray);
