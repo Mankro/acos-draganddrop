@@ -170,13 +170,15 @@ The configuration for each draggable label may use the following keys:
   and `prepend`. The value `false` may be used to disable the reveal effect completely.
   For example, you may disable the reveal effect for incorrect answers and use
   some effect for correct answers.
+  `revealCorrect` and `revealWrong` may also be defined under the droppables section
+  and those values take priority over the corresponding setting under draggables.
 
 
 ## JSON definitions for the droppables
 
 The droppables section in the JSON file defines which draggables are correct answers
-to each droppable. Feedback to the answers may be defined under either draggables or
-droppables in the JSON (or mixed in both sections). Feedback was already explained
+to each droppable. Feedback and reveal effects to the answers may be defined under either draggables or
+droppables in the JSON (or mixed in both sections). Feedback and reveal effects were already explained
 in the previous section.
 
 Example JSON:
@@ -191,13 +193,16 @@ Example JSON:
         "DEFAULT": "Wrong!"
       },
       "correct": "draglabel1",
+      "revealCorrect": {
+        "replace": "For correct answers, the droppable content is replaced with this text. The reveal effect defined under the draggable is not used."
+      }
     },
     "droppablelabel2": {
       "feedback": {
         "draglabel2": "Correct! Either \"a\" or \"the\" can be used here.",
         "draglabel3": "Correct! Either \"a\" or \"the\" can be used here.",
       },
-      "correct": ["draglabel2", "draglabel3"],
+      "correct": ["draglabel2", "draglabel3"]
     },
     "droppablelabel3": {
       "feedback": {
@@ -218,6 +223,12 @@ that is used in the exercise XML file. The following keys may be defined for eac
   is accepted as the correct answer, give the draggable labels in an array (`["label1", "label2", ...]`)
 * `feedback`: feedback HTML strings for each draggable-droppable pair. See `feedback` in
   the draggables section for a more detailed explanation.
+* `revealCorrect` and `revealWrong`: these were explained under the draggables section.
+  If one or both of them are defined under the droppables, its value is used over the
+  corresponding setting under draggables. Note that the reveal effect defined under the droppable
+  allows you to use a certain effect when any draggable is dragged to the droppable, while
+  the effect defined under the draggable may be used when the draggable is dragged into
+  any droppable.
 
 
 ## Combined feedback

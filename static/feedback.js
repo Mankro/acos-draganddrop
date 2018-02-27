@@ -329,9 +329,23 @@ function initDragAndDropFeedback(element, options, $, window, document, undefine
       var dropPayload = this.droppablesPayload[droppableElem.data('label')];
       // if the reveal value is not defined in the payload,
       // the default action is to replace the droppable content with the draggable content
-      if (dragPayload.reveal === false ||
-          (dragPayload.revealCorrect === false && isCorrect) ||
-          (dragPayload.revealWrong === false && !isCorrect)) {
+      // If the droppable payload defines a reveal effect that applies to the current answer,
+      // the reveal effect defined in the draggable payload is ignored.
+      var disableReveal = false;
+      if ((typeof dropPayload.revealCorrect === 'undefined' && isCorrect) ||
+          (typeof dropPayload.revealWrong === 'undefined' && !isCorrect)) {
+        if (dragPayload.reveal === false ||
+            (dragPayload.revealCorrect === false && isCorrect) ||
+            (dragPayload.revealWrong === false && !isCorrect)) {
+          disableReveal = true;
+        }
+      } else {
+        if ((dropPayload.revealCorrect === false && isCorrect) ||
+            (dropPayload.revealWrong === false && !isCorrect)) {
+          disableReveal = true;
+        }
+      }
+      if (disableReveal) {
         // if the reveal value is set to false in the payload,
         // do not reveal anything and keep the droppable text intact
         // The original content is set back here incase other answers have replaced
