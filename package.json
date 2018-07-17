@@ -6,7 +6,12 @@
     "acos-clickdragfillin-util": "~0.3.0"
   },
   "description": "Drag-and-drop exercise content type for the ACOS server",
-  "main": "index.coffee",
+  "devDependencies": {
+    "grunt": "^1.0.3",
+    "grunt-contrib-coffee": "^2.0.0",
+    "grunt-contrib-uglify-es": "^3.3.0"
+  },
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

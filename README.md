@@ -16,13 +16,6 @@ You must specify content (correct answers, feedback, etc.) by providing a hand-w
 The JSON file must be placed in the same directory as the exercise XML file and named similarly to the XML file
 (e.g., exercise1.xml goes with exercise1.json).
 
-This content type uses CoffeeScript. The easiest way to make it work is to install 
-CoffeeScript either globally or in the `acos-server` directory (`npm install coffeescript`) 
-and to ensure that the `acos-server` automatically recognizes `.coffee` files. That is 
-achieved by adding a line to the start of the `acos-server/app.js` file: 
-`require('coffee-script/register');`. Alternatively, the CoffeeScript code could be 
-compiled to JavaScript so that the deployment server does not require CoffeeScript at all.
-
 # Notation
 
 The content of the XML file is either an HTML fragment or a complete HTML document.
@@ -292,7 +285,7 @@ one combination. The objects use the following keys:
   By default, labels are used.
 
 
-# Final comment (extra feedback after completing the exercise)
+## Final comment (extra feedback after completing the exercise)
 
 It is possible to show extra feedback to the student after the exercise has been completed.
 The extra feedback or final comment may depend on the student's final score, in addition
@@ -350,3 +343,10 @@ Alternatively, you can create a CSS file in the static folder of the content pac
   <link href="/static/content-package-name/my-stylesheet.css" rel="stylesheet">
 </head>
 ```
+
+# To developers
+
+This content type is implemented in CoffeeScript. The Grunt task runner is used to
+compile the code to JavaScript (see the file `Gruntfile.coffee`). The package
+released to NPM must include the compiled JS code.
+
