@@ -9,6 +9,7 @@ class DragAndDrop extends DragAndDropBase
     draggable_selector: '.draggable'
     draggable_class: 'draggable'
     draggables_selector: '.draganddrop-draggables'
+    draggables_container_class: 'draganddrop-draggables'
     complete_msg_attr: 'data-msg-complete'
     complete_uploading_msg_attr: 'data-msg-complete-uploading'
     complete_uploaded_msg_attr: 'data-msg-complete-uploaded'
@@ -33,7 +34,7 @@ class DragAndDrop extends DragAndDropBase
     @correctPointsElem = @element.find(@settings.correct_answers_selector)
     @wrongPointsElem = @element.find(@settings.wrong_answers_selector)
     @dragsLeftMsgDiv = @element.find(@settings.drags_left_msg_selector)
-    @draggablesContainer = @element.find(@settings.draggables_selector)
+    @draggablesContainer = null
     @quitButton = @element.find(@settings.quit_button_selector)
     @correctAnswers = 0
     @incorrectAnswers = 0
@@ -45,22 +46,7 @@ class DragAndDrop extends DragAndDropBase
 
   init: ->
     self = this
-    # create draggable elements based on payload data
-    for own id, pl of @draggablesPayload
-      text = pl.content
-      customClass = pl.htmlclass
-      dragElem = $('<span>')
-      dragElem
-        .addClass(self.settings.draggable_class)
-        .attr('data-label', id)
-        .attr('draggable', 'true')
-        .html(text)
-        .appendTo @draggablesContainer
-      if customClass
-        # set custom class to the draggable element, if the payload defines it
-        # multiple classes may be given in one space-separated string
-        dragElem.addClass customClass
-
+    @initDraggables()
     idCounter = 0
     # attach event handlers to the draggable and droppable elements in the exercise as well as
     # generate and add unique IDs to the droppable elements
@@ -112,6 +98,31 @@ class DragAndDrop extends DragAndDropBase
     $(window).on 'resize', ->
       self.setInfoPosition()
       self.setDraggablesPosition()
+
+  initDraggables: ->
+    # create the draggables container
+    @draggablesContainer = @contentDiv.find(@settings.draggables_selector).empty()
+    if not @draggablesContainer.length
+      # add the draggables container to the default location
+      @draggablesContainer = $('<div></div>')
+        .addClass @settings.draggables_container_class
+        .prependTo @element
+
+    # create draggable elements based on payload data
+    for own id, pl of @draggablesPayload
+      text = pl.content
+      customClass = pl.htmlclass
+      dragElem = $('<span>')
+      dragElem
+        .addClass(@settings.draggable_class)
+        .attr('data-label', id)
+        .attr('draggable', 'true')
+        .html(text)
+        .appendTo @draggablesContainer
+      if customClass
+        # set custom class to the draggable element, if the payload defines it
+        # multiple classes may be given in one space-separated string
+        dragElem.addClass customClass
 
   handleDragStart: (e, dragElem) ->
     e.originalEvent.dataTransfer.effectAllowed = 'copy'
