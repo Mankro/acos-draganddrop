@@ -34,7 +34,7 @@ class DragAndDropFeedback extends DragAndDropBase
   init: ->
     self = this
     idCounter = 0
-    @element.find(@settings.droppable_selector).each ->
+    @element.find(@settings.droppable_selector).filter ->
       uniqueId = idCounter++
       $(this).data 'id', uniqueId
       questionLabel = $(this).data('label')
@@ -51,8 +51,8 @@ class DragAndDropFeedback extends DragAndDropBase
       if answers and answers.length > 0
         draggableLabel = answers[answers.length - 1]
       else
-        return true
-        # no answers set, continue to the next element in iteration
+        return false
+        # no answers set, so there is nothing more to do for this element
       self.latestAnswers[uniqueId] = draggableLabel
       droppableElem = $(this)
       isCorrect = self.isCorrectAnswer(draggableLabel, questionLabel)
@@ -88,7 +88,7 @@ class DragAndDropFeedback extends DragAndDropBase
           dragLabel = answerSelect.val()
           self.latestAnswers[uniqueId] = dragLabel
           self.showFeedback dragLabel, droppableElem
-      return
+      return true
     .click (ev) ->
       # If no other answer has been selected yet, show feedback for the last answer to this droppable.
       # Otherwise, show the most recently selected answer.

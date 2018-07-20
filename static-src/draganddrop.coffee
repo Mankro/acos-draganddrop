@@ -19,6 +19,7 @@ class DragAndDrop extends DragAndDropBase
     drags_left_msg_selector: '.draganddrop-dragsleftmsg'
     drags_left_singular_msg_attr: 'data-msg-singular'
     drags_left_plural_msg_attr: 'data-msg-plural'
+    quit_button_selector: '[data-quit-button]'
 
   constructor: (element, options) ->
     super(element, options)
@@ -33,6 +34,7 @@ class DragAndDrop extends DragAndDropBase
     @wrongPointsElem = @element.find(@settings.wrong_answers_selector)
     @dragsLeftMsgDiv = @element.find(@settings.drags_left_msg_selector)
     @draggablesContainer = @element.find(@settings.draggables_selector)
+    @quitButton = @element.find(@settings.quit_button_selector)
     @correctAnswers = 0
     @incorrectAnswers = 0
     @maxCorrectAnswers = @element.find(@settings.droppable_selector).length
@@ -96,6 +98,12 @@ class DragAndDrop extends DragAndDropBase
       self.handleDragStart e, $(this)
     .on 'dragend', (e) ->
       self.handleDragEnd e, $(this)
+
+    @quitButton.click ->
+      # submit the unfinished solution, that is to say, the user has not found
+      # all correct answers yet, but wants to quit and receive a grade anyway
+      self.completeExercise(true)
+      return
 
     # use fixed positioning for the info and draggables containers
     # if they cannot be seen on the screen otherwise
@@ -262,25 +270,38 @@ class DragAndDrop extends DragAndDropBase
       # this answer had already been made previously
       logPayload.rerun = true
     @answerLog.push logPayload
+
+    # the quit button is active after the first answer until the exercise is completed
+    @quitButton.prop('disabled', false)
     @checkCompletion()
     return
 
   checkCompletion: ->
-    if @correctAnswers >= @maxCorrectAnswers
-      @completed = true
-      @dragsLeftMsgDiv.hide()
-      @completeMsg.text @completeDiv.attr(@settings.complete_msg_attr)
-      @completeDiv.removeClass('hide').show()
-      @grade()
-      @sendLog()
+    @completeExercise(false) if @correctAnswers >= @maxCorrectAnswers
     return
+
+  completeExercise: (unfinished = false) ->
+    return if @completed
+    @completed = true
+    @quitButton.prop('disabled', true)
+    @dragsLeftMsgDiv.hide() unless unfinished
+    # drag event handlers are detached here for unfinished submissions and
+    # in the dragend event handler for normal submissions
+    @detachDragEventHandlers() if unfinished
+    @completeMsg.text @completeDiv.attr(@settings.complete_msg_attr)
+    @completeDiv.removeClass('hide').show()
+    @grade()
+    @sendLog()
 
   grade: ->
     self = this
     if window.location.pathname.substring(0, 6) != '/html/'
       # hide this uploading message when acos html protocol is used since it does not store any grading
       @completeMsg.text @completeDiv.attr(@settings.complete_uploading_msg_attr)
-    scorePercentage = Math.round(@maxCorrectAnswers / (@correctAnswers + @incorrectAnswers) * 100)
+
+    # add a penalty if the exercise is submitted in an unfinished state (not all correct answers found)
+    penalty = 3 * (@maxCorrectAnswers - @correctAnswers)
+    scorePercentage = Math.round(@maxCorrectAnswers / (@correctAnswers + @incorrectAnswers + penalty) * 100)
     # show final points
     @addFinalPointsString @pointsDiv, scorePercentage
     # final comment may be defined in the exercise payload and depends on the final points
