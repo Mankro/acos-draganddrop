@@ -107,6 +107,11 @@ class DragAndDrop extends DragAndDropBase
       @draggablesContainer = $('<div></div>')
         .addClass @settings.draggables_container_class
         .prependTo @element
+    else if @draggablesContainer.hasClass('vertical')
+      @element.addClass(
+        if @draggablesContainer.hasClass('right') then 'vertical-right-draggables'
+        else 'vertical-draggables'
+      )
 
     # create draggable elements based on payload data
     for own id, pl of @draggablesPayload
@@ -416,6 +421,8 @@ class DragAndDrop extends DragAndDropBase
     return
 
   setDraggablesPosition: ->
+    # disable this method when the draggables container is vertical
+    return if @draggablesContainer.hasClass('vertical')
     # make the draggables container fixed if it cannot be seen: the window is too small
     # to fit everything on the screen at once
     if $(window).height() * 0.8 > @contentDiv.height()

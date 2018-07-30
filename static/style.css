@@ -18,6 +18,20 @@
   overflow-y: scroll;
 }
 
+.draganddrop-draggables.vertical {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 10%;
+  padding: 0;
+}
+
+.draganddrop-draggables.vertical.right {
+  left: unset;
+  right: 0;
+}
+
 .draggable {
   padding: 0.2em;
   background-color: rgb(223, 240, 216);
@@ -91,6 +105,13 @@
   margin-top: 180px; /* must match the height of the fixed position element .draganddrop-draggables */
 }
 
+.vertical-draggables .draganddrop-content {
+  margin-left: 10%;
+}
+.vertical-right-draggables .draganddrop-content {
+  margin-right: 10%;
+}
+
 .draganddrop-info {
   background-color: rgb(242, 242, 242);
 }
@@ -101,6 +122,19 @@
   width: 98%;
   max-height: 180px;
   overflow-y: scroll;
+}
+
+.vertical-draggables .draganddrop-info {
+  margin-left: 10%;
+}
+.vertical-draggables .draganddrop-info.fixed {
+  width: 88%;
+}
+.vertical-right-draggables .draganddrop-info {
+  margin-right: 10%;
+}
+.vertical-right-draggables .draganddrop-info.fixed {
+  width: 88%;
 }
 
 .draganddrop-feedback {
