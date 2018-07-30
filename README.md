@@ -321,6 +321,26 @@ the feedback `75` is active for scores between 51 and 75%. The highest defined
 limit should be `100` or else there is no score-based feedback for perfect solutions.
 
 
+## Placement of the draggables container
+
+By default, the draggables are rendered horizontally at the top of the exercise
+web page. The placement may be modified by defining a certain `<div>` element
+in the exercise XML file. If horizontal positioning should be used, define
+`<div class="draganddrop-draggables"></div>` somewhere in the exercise XML,
+for example, after the initial instructions and before the actual content.
+The draggables container would then be rendered after the instructions close to
+the content. If the browser window is small, the draggables container may still
+be rendered at the top of the page, but it is then also fixed to the top so that
+it stays visible when the page is scrolled down.
+
+If the draggables should be positioned **vertically** in the **left** side, define
+`<div class="draganddrop-draggables vertical"></div>` preferably as early as
+possible in the exercise XML. That is to say, avoid nesting it deeply inside
+other elements. If the body element is defined in the XML file, then the div
+must be inside the body. If the draggables should be positioned vertically in
+the **right** side, the div is `<div class="draganddrop-draggables vertical right"></div>`.
+
+
 # Custom stylesheets
 
 Custom CSS styles can be defined using the `<style>` tag. The `<html>` and `<head>` tags must be used in this case.
