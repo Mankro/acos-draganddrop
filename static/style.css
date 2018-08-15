@@ -32,6 +32,12 @@
   right: 0;
 }
 
+.draganddrop-draggables.vertical .draggable {
+  width: 93%;
+  margin-left: 0;
+  margin-right: 0;
+}
+
 .draggable {
   padding: 0.2em;
   background-color: rgb(223, 240, 216);
