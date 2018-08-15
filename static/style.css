@@ -47,7 +47,7 @@
   cursor: move;
 }
 
-.draggable.disabled {
+.draggable.disabled, .draggable.disabled:hover {
   background-color: rgb(204, 204, 204);
   color: rgb(89, 89, 89);
   cursor: not-allowed;
@@ -56,6 +56,19 @@
 /* draggables are disabled when the exercise is completed */
 .draggable.finished {
   cursor: not-allowed;
+}
+.draggable.finished:hover {
+  color: rgb(0, 0, 0);
+}
+
+.draggable.selected {
+  background-color: rgb(74, 237, 33);
+  box-shadow: inset -2px -2px 3px rgba(255, 255, 255, .6),
+              inset 2px 2px 3px rgba(0, 0, 0, .6);
+}
+
+.draggable:hover {
+  color: rgb(20, 67, 255);
 }
 
 .small {
@@ -75,26 +88,26 @@
   pointer-events: none;
 }
 
-/* hover over a droppable that has not been answered yet */
+/* hover over a droppable */
+.droppable:hover {
+  color: blue;
+  cursor: pointer;
+  background-color: #eee;
+}
 /* drag event hovering over a droppable */
-.droppable:hover, .droppable.over {
+.droppable.over {
+  color: blue;
   background-color: #eee;
 }
 
 /* hover over a droppable that has been answered: they can be clicked to show their feedback again */
 .droppable.correct:hover {
-  color: blue;
-  cursor: pointer;
   background-color: #cfc;
 }
 .droppable.wrong:hover {
-  color: blue;
-  cursor: pointer;
   background-color: #fcc;
 }
 .droppable.neutral:hover {
-  color: blue;
-  cursor: pointer;
   background-color: #ccf;
 }
 

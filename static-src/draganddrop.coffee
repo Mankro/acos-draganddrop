@@ -42,6 +42,8 @@ class DragAndDrop extends DragAndDropBase
     # total correct answers in the exercise
     @answerLog = [] # all answers (drags) for logging
     @dragData = null # drag data stored here in case the native API hides it
+    # the selected draggable for making answers by clicking
+    @selectedDrag = null
     @init()
 
   init: ->
@@ -76,6 +78,7 @@ class DragAndDrop extends DragAndDropBase
       self.handleDrop e, $(this)
     .on 'click', (e) ->
       # show feedback again for this droppable
+      # or make answers by clicking
       self.handleDroppableClick e, $(this)
 
     # Note about event handlers: this is the element which the handler is attached to,
@@ -84,6 +87,8 @@ class DragAndDrop extends DragAndDropBase
       self.handleDragStart e, $(this)
     .on 'dragend', (e) ->
       self.handleDragEnd e, $(this)
+    .on 'click', (e) ->
+      self.handleDraggableClick e, $(this)
 
     @quitButton.click ->
       # submit the unfinished solution, that is to say, the user has not found
@@ -213,25 +218,49 @@ class DragAndDrop extends DragAndDropBase
     e.preventDefault()
     dropId = dropElem.data('id')
     answers = @questionAnswered[dropId]
-    if answers.length < 1
-      # not answered yet, do nothing
+    if answers.length < 1 and not @selectedDrag
+      # not answered yet and not answering by clicking, do nothing
       return false
-    draggableLabel = @latestAnswers[dropId]
-    droppableLabel = dropElem.data('label')
-    feedback = @getFeedback(draggableLabel, droppableLabel, dropId)
-    @updateFeedback feedback, @isCorrectAnswer(draggableLabel, droppableLabel)
-    if not @completed
-      # Log this click event (which shows that the learner wanted to study the feedback again).
-      # The log event is sent when the exercise is completed and thus
-      # it is unnecessary to keep track of clicks after that.
-      logPayload = 
-        qid: dropId
-        qlabel: droppableLabel
-        alabel: draggableLabel
-        time: (new Date).toISOString()
-        click: true
-      @answerLog.push logPayload
+
+    droppableLabel = dropElem.data 'label'
+    if @selectedDrag and not dropElem.hasClass 'correct'
+      # answer by clicking
+      draggableLabel = @selectedDrag.data 'label'
+      @checkAnswer draggableLabel, droppableLabel, dropElem
+      if @completed
+        # if the exercise has been completed, detach the drag event handlers
+        # this can not be done inside checkAnswer since it would break
+        # the ongoing drag event when the user answers by dragging
+        @detachDragEventHandlers()
+    else
+      # show feedback of the latest answer in this droppable
+      draggableLabel = @latestAnswers[dropId]
+      feedback = @getFeedback(draggableLabel, droppableLabel, dropId)
+      @updateFeedback feedback, @isCorrectAnswer(draggableLabel, droppableLabel)
+      if not @completed
+        # Log this click event (which shows that the learner wanted to study the feedback again).
+        # The log event is sent when the exercise is completed and thus
+        # it is unnecessary to keep track of clicks after that.
+        logPayload =
+          qid: dropId
+          qlabel: droppableLabel
+          alabel: draggableLabel
+          time: (new Date).toISOString()
+          click: true
+        @answerLog.push logPayload
     false
+
+  handleDraggableClick: (e, dragElem) ->
+    # select a draggable for answering by clicking
+    if dragElem.is(@selectedDrag)
+      # clicked the same draggable again, deselect it
+      @selectedDrag.removeClass 'selected'
+      @selectedDrag = null
+    else
+      # clear the previous selection first
+      @selectedDrag.removeClass('selected') if @selectedDrag
+      @selectedDrag = dragElem
+      @selectedDrag.addClass 'selected'
 
   checkAnswer: (draggableLabel, droppableLabel, droppableElem) ->
     # if the exercise has been completed or
@@ -349,7 +378,11 @@ class DragAndDrop extends DragAndDropBase
 
   disableDraggable: (draggableLabel) ->
     dragElem = @draggablesContainer.find(@settings.draggable_selector + '[data-label="' + draggableLabel + '"]')
-    dragElem.attr('draggable', 'false').addClass 'disabled'
+    dragElem.attr('draggable', 'false')
+      .addClass('disabled')
+      .removeClass('selected')
+      .off('click')
+    @selectedDrag = null if dragElem.is(@selectedDrag)
     # if the draggable contains <img> or <a> elements, they are draggable by default
     # and dragging must be disabled separately
     dragElem.find('img, a').attr 'draggable', 'false'
@@ -407,9 +440,12 @@ class DragAndDrop extends DragAndDropBase
     @element.find(@settings.droppable_selector).off 'dragover dragenter dragleave drag'
     @draggablesContainer
       .find(@settings.draggable_selector)
-      .off('dragstart dragend')
+      .off('dragstart dragend click')
       .attr('draggable', 'false')
       .addClass 'finished'
+    if @selectedDrag
+      @selectedDrag.removeClass 'selected'
+      @selectedDrag = null
     return
 
   addFinalPointsString: (pointsElem, scorePercentage) ->
