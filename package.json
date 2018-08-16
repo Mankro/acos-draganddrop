@@ -1,6 +1,6 @@
 {
   "name": "acos-draganddrop",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "dependencies": {
     "nunjucks": "^3.1.3",
     "acos-clickdragfillin-util": "~0.3.3"
