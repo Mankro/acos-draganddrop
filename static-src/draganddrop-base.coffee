@@ -58,10 +58,8 @@ class DragAndDropBase
         # pair: draggable label, droppable label/id
         # Check if the current answer is part of the combo
         # (one pair must match with the current answer): if not, the combo is not triggered.
-        # Ensure that integers and strings have the same type when compared for equality
-        # (droppableLabel may have been converted to an integer by jQuery.data)
         if (not currentAnswerInCombo and pair[0] == draggableLabel and
-           (not useDropId and pair[1] == droppableLabel.toString() or
+           (not useDropId and pair[1] == droppableLabel or
             useDropId and pair[1] == droppableId))
           currentAnswerInCombo = true
         # check if this pair is satisfied, i.e., the latest answer in the droppable is the draggable given in the pair
@@ -116,7 +114,7 @@ class DragAndDropBase
   revealAnswerInDroppable: (draggableLabel, droppableElem, isCorrect) ->
     dropId = droppableElem.data('id')
     dragPayload = @draggablesPayload[draggableLabel]
-    dropPayload = @droppablesPayload[droppableElem.data('label')]
+    dropPayload = @droppablesPayload[droppableElem.data('label').toString()]
     # if the reveal value is not defined in the payload,
     # the default action is to replace the droppable content with the draggable content
     # If the droppable payload defines a reveal effect that applies to the current answer,

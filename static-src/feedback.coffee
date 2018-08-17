@@ -37,7 +37,7 @@ class DragAndDropFeedback extends DragAndDropBase
     @element.find(@settings.droppable_selector).filter ->
       uniqueId = idCounter++
       $(this).data 'id', uniqueId
-      questionLabel = $(this).data('label')
+      questionLabel = $(this).data('label').toString()
       # labels are set by the teacher, they may repeat the same values
       if Array.isArray(self.droppablesByLabel[questionLabel])
         self.droppablesByLabel[questionLabel].push uniqueId
@@ -108,7 +108,7 @@ class DragAndDropFeedback extends DragAndDropBase
     if not draggableLabel
       @feedbackDiv.text '[Error: answer not set]'
       return
-    droppableLabel = droppableElem.data('label')
+    droppableLabel = droppableElem.data('label').toString()
     if not @droppablesPayload[droppableLabel] or not @draggablesPayload[draggableLabel]
       @feedbackDiv.text '[Error: payload not set]'
       return

@@ -55,7 +55,8 @@ class DragAndDrop extends DragAndDropBase
     @element.find(@settings.droppable_selector).each ->
       uniqueId = idCounter++
       $(this).data 'id', uniqueId
-      questionLabel = $(this).data('label')
+      # keep labels as strings
+      questionLabel = $(this).data('label').toString()
       # labels are set by the teacher, they may repeat the same values
       if Array.isArray(self.droppablesByLabel[questionLabel])
         self.droppablesByLabel[questionLabel].push uniqueId
@@ -147,7 +148,7 @@ class DragAndDrop extends DragAndDropBase
       catch ex
         # ignore, some browsers do not support setting the drag image
     dragElem.css 'opacity', '0.5'
-    dragData = dragElem.data('label')
+    dragData = dragElem.data('label').toString()
     try
       e.originalEvent.dataTransfer.setData 'text/plain', dragData
     catch ex
@@ -198,7 +199,7 @@ class DragAndDrop extends DragAndDropBase
     if not draggableLabel
       # fallback when the native API fails
       draggableLabel = @dragData
-    droppableLabel = dropElem.data('label')
+    droppableLabel = dropElem.data('label').toString()
     @checkAnswer draggableLabel, droppableLabel, dropElem
     false
 
@@ -222,10 +223,10 @@ class DragAndDrop extends DragAndDropBase
       # not answered yet and not answering by clicking, do nothing
       return false
 
-    droppableLabel = dropElem.data 'label'
+    droppableLabel = dropElem.data('label').toString()
     if @selectedDrag and not dropElem.hasClass 'correct'
       # answer by clicking
-      draggableLabel = @selectedDrag.data 'label'
+      draggableLabel = @selectedDrag.data('label').toString()
       @checkAnswer draggableLabel, droppableLabel, dropElem
       if @completed
         # if the exercise has been completed, detach the drag event handlers
