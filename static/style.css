@@ -30,6 +30,12 @@
   padding: 0;
   flex-direction: column;
 }
+@media (max-width: 1200px) {
+  /* make the vertical draggables container wider on narrow viewports */
+  .draganddrop-draggables.vertical {
+    width: 20%;
+  }
+}
 
 .draganddrop-draggables.start {
   justify-content: flex-start;
@@ -140,6 +146,14 @@
 .vertical-right-draggables .draganddrop-content {
   margin-right: 10%;
 }
+@media (max-width: 1200px) {
+  .vertical-draggables .draganddrop-content {
+    margin-left: 20%;
+  }
+  .vertical-right-draggables .draganddrop-content {
+    margin-right: 20%;
+  }
+}
 
 .draganddrop-info {
   background-color: rgb(242, 242, 242);
@@ -164,6 +178,20 @@
 }
 .vertical-right-draggables .draganddrop-info.fixed {
   width: 88%;
+}
+@media (max-width: 1200px) {
+  .vertical-draggables .draganddrop-info {
+    margin-left: 20%;
+  }
+  .vertical-draggables .draganddrop-info.fixed {
+    width: 78%;
+  }
+  .vertical-right-draggables .draganddrop-info {
+    margin-right: 20%;
+  }
+  .vertical-right-draggables .draganddrop-info.fixed {
+    width: 78%;
+  }
 }
 
 .draganddrop-feedback {
