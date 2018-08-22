@@ -340,6 +340,15 @@ other elements. If the body element is defined in the XML file, then the div
 must be inside the body. If the draggables should be positioned vertically in
 the **right** side, the div is `<div class="draganddrop-draggables vertical right"></div>`.
 
+By default, the draggables are centered within the container. If the draggables
+should align to the start of the container, add the class `start` to the div,
+for example, `<div class="draganddrop-draggables start"></div>`. Likewise,
+the class `end` causes the draggables to align to the end of the container.
+These classes work with the vertical container as well. Assuming that the page
+uses left-to-right direction like the English language does, the start of
+a horizontal container is in the left side and the start of a vertical container
+is in the top.
+
 
 # Custom stylesheets
 
